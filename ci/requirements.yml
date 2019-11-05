@@ -1,0 +1,25 @@
+name: test
+channels:
+- conda-forge
+- defaults
+dependencies:
+- python=3.*
+- matplotlib
+- numpy
+- pandas
+- gdal
+- fiona
+- rasterio>=1.0
+- rasterstats
+- shapely
+- rtree
+- pyproj>=2.0
+- pyshp
+- codecov
+- coverage
+- flake8
+- pytest
+- sphinx
+- numpydoc
+- sphinx-copybutton
+- sphinx_rtd_theme

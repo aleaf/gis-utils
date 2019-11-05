@@ -1,0 +1,6 @@
+[run]
+source = gisutils
+[report]
+omit =
+    .*version.*
+    *_version.py

@@ -1,0 +1,169 @@
+import os
+import numpy as np
+import rasterio
+from rasterio import Affine
+from rasterio.crs import CRS
+from shapely.geometry import box
+import pytest
+from ..raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
+                      write_raster, get_transform, read_arc_ascii,
+                      get_values_at_points, zonal_stats)
+
+
+def geotiff(tmpdir, rotation=45.):
+    filename = os.path.join(tmpdir, 'test_raster.tif')
+
+    array = np.array([[0, 1],
+                      [2, 3]])
+    height, width = array.shape
+    dx = 5.
+    xll, yll = 0., 0.
+    write_raster(filename, array, xll=xll, yll=yll,
+                     dx=dx, dy=None, rotation=rotation, proj_str='epsg:3070',
+                     nodata=-9999)
+    xul = _xll_to_xul(xll, height*dx, rotation)
+    yul = _yll_to_yul(yll, height*dx, rotation)
+    transform = get_transform(xul=xul, yul=yul,
+                              dx=dx, dy=dx, rotation=rotation)
+    return filename, transform
+
+
+def arc_ascii(tmpdir):
+    filename = os.path.join(tmpdir, 'test_raster.asc')
+
+    array = np.array([[0, 1],
+                      [2, 3]])
+    height, width = array.shape
+    dx = 5.
+    xll, yll = 0., 0.
+    rotation = 0.
+    write_raster(filename, array, xll=xll, yll=yll,
+                     dx=dx, dy=None, rotation=rotation,
+                     nodata=-9999)
+    xul = _xll_to_xul(xll, height*dx, rotation)
+    yul = _yll_to_yul(yll, height*dx, rotation)
+    transform = get_transform(xul=xul, yul=yul,
+                              dx=dx, dy=dx, rotation=rotation)
+    return filename, transform
+
+
+def test_get_transform():
+    dx = 5.
+    height = 2
+    xll, yll = 0., 0.
+    rotation = 30.
+    xul = _xll_to_xul(xll, height*dx, rotation)
+    yul = _yll_to_yul(yll, height*dx, rotation)
+    transform = get_transform(xul=xul, yul=yul,
+                              dx=dx, dy=dx, rotation=rotation)
+    transform2 = Affine(dx, 0., xul,
+                        0., -dx, yul) * \
+                 Affine.rotation(rotation)
+    assert transform == transform2
+
+
+@pytest.mark.parametrize('xll_height_rotation', [(0., 10., 30.)])
+def test_xll_to_xul(xll_height_rotation):
+    xll, height, rotation = xll_height_rotation
+    expected = np.sin(rotation * np.pi/180) * height
+    xul = _xll_to_xul(xll, height, rotation)
+    assert np.allclose(xul, expected)
+    xll2 = _xul_to_xll(xul, height, rotation)
+    assert np.allclose(xll2, xll)
+
+
+@pytest.mark.parametrize('yll_height_rotation', [(0., 10., 30.)])
+def test_yll_to_yul(yll_height_rotation):
+    yll, height, rotation = yll_height_rotation
+    expected = np.cos(rotation * np.pi / 180) * height
+    yul = _yll_to_yul(yll, height, rotation)
+    assert np.allclose(yul, expected)
+    yll2 = _yul_to_yll(yul, height, rotation)
+    assert np.allclose(yll2, yll)
+
+
+def test_get_values_at_points_geotiff(tmpdir):
+    filename, transform = geotiff(tmpdir, rotation=0.)
+    result = get_values_at_points(filename,
+                                  x=[2.5, 7.5, -1],
+                                  y=[2.5, 7.5, -1],
+                                  out_of_bounds_errors='coerce')
+    result[np.isnan(result)] = -9999
+    expected = [2, 1, -9999]
+    assert np.allclose(result, expected)
+
+    filename, transform = geotiff(tmpdir, rotation=45)
+    x = [3.5, 12, -1]
+    y = [1, 1, -1]
+    result = get_values_at_points(filename,
+                                  x=x,
+                                  y=y,
+                                  out_of_bounds_errors='coerce')
+    result[np.isnan(result)] = -9999
+    expected = [2, 1, -9999]
+    assert np.allclose(result, expected)
+
+
+def test_get_values_at_points_arc_ascii(tmpdir):
+    filename, _ = arc_ascii(tmpdir)
+    result = get_values_at_points(filename,
+                                  x=[2.5, 7.5, -1],
+                                  y=[2.5, 7.5, -1],
+                                  out_of_bounds_errors='coerce')
+    result[np.isnan(result)] = -9999
+    expected = [2, 1, -9999]
+    assert np.allclose(result, expected)
+
+
+def test_zonal_stats(tmpdir):
+    filename, transform = geotiff(tmpdir, rotation=0.)
+    features = [box(-1, 0, 1, 1),  # polygon doesn't include any cell centers
+                box(0, 0, 2.6, 2.6),  # 0, 1 should be included, because cell center is within polygon
+                box(0.5, 0.5, 100, 100),
+                box(0, 0, 2.5, 2.5),
+                ]
+    result = zonal_stats(features, filename, out_shape=None,
+                stats=['mean'])
+    result = result['mean']
+    result[np.isnan(result)] = -9999
+    assert np.array_equal(result, [-9999, 2., np.arange(4).mean(), 2.])
+    result = zonal_stats(features, filename, out_shape=(2, 2),
+                         stats=['mean'])
+    assert result['mean'].shape == (2, 2)
+
+
+def test_write_raster_geotiff(tmpdir):
+    fname, tranform = geotiff(tmpdir)
+    expected = {'driver': 'GTiff',
+                'dtype': 'int32',
+                'nodata': -9999.0,
+                'width': 2,
+                'height': 2,
+                'count': 1,
+                'crs': CRS.from_epsg(3070),
+                'transform': tranform
+                }
+    with rasterio.open(fname) as src:
+        meta = src.meta
+        data = src.read(1)
+    assert meta == expected
+    assert data.dtype == np.int32
+    assert data.sum() == 6
+
+
+def test_write_raster_ascii(tmpdir):
+    fname, transform = arc_ascii(tmpdir)
+    data, metadata = read_arc_ascii(fname, shape=(2, 2))
+    expected = {'ncols': 2,
+                'nrows': 2,
+                'xllcorner': 0.0,
+                'yllcorner': 0.0,
+                'cellsize': 5.0,
+                'nodata_value': -9999,
+                'geotransform': (transform.a, transform.b, transform.c,
+                                 transform.d, transform.e, transform.f)}
+    assert metadata == expected
+    assert data.sum() == 6
+
+
+

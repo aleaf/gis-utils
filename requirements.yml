@@ -1,0 +1,16 @@
+name: gisutils
+channels:
+- conda-forge
+- defaults
+dependencies:
+- python=3.*
+- matplotlib
+- numpy
+- pandas
+- gdal
+- fiona
+- rasterio>=1.0
+- rasterstats
+- shapely
+- rtree
+- pyproj>=2.0
