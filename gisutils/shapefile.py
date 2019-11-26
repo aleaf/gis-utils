@@ -228,16 +228,18 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
                 if filter is not None:
                     print('Check filter {} for consistency \
 with shapefile coordinate system'.format(filter))
-            geoms = shp_df.geometry.tolist()
-            if geoms.count(None) == 0:
-                shp_df['geometry'] = [shape(g) for g in geoms]
-            elif skip_empty_geom:
-                null_geoms = [i for i, g in enumerate(geoms) if g is None]
-                shp_df.drop(null_geoms, axis=0, inplace=True)
-                shp_df['geometry'] = [shape(g) for g in shp_df.geometry.tolist()]
+            # shp_df will only have a geometry column if it isn't empty
             else:
-                shp_df['geometry'] = [shape(g) if g is not None else None
-                                      for g in geoms]
+                geoms = shp_df.geometry.tolist()
+                if geoms.count(None) == 0:
+                    shp_df['geometry'] = [shape(g) for g in geoms]
+                elif skip_empty_geom:
+                    null_geoms = [i for i, g in enumerate(geoms) if g is None]
+                    shp_df.drop(null_geoms, axis=0, inplace=True)
+                    shp_df['geometry'] = [shape(g) for g in shp_df.geometry.tolist()]
+                else:
+                    shp_df['geometry'] = [shape(g) if g is not None else None
+                                          for g in geoms]
 
         # for reading in DBF files (just like shps, but without geometry)
         else:
