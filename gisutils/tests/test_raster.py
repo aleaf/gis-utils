@@ -1,11 +1,13 @@
 import os
 import numpy as np
+import pandas as pd
 import rasterio
 from rasterio import Affine
 from rasterio.crs import CRS
 from shapely.geometry import box
 import pytest
-from ..raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
+from gisutils import df2shp
+from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
                       get_values_at_points, zonal_stats)
 
@@ -115,13 +117,40 @@ def test_get_values_at_points_arc_ascii(tmpdir):
     assert np.allclose(result, expected)
 
 
-def test_zonal_stats(tmpdir):
-    filename, transform = geotiff(tmpdir, rotation=0.)
+@pytest.fixture(scope='module')
+def polygon_features():
     features = [box(-1, 0, 1, 1),  # polygon doesn't include any cell centers
                 box(0, 0, 2.6, 2.6),  # 0, 1 should be included, because cell center is within polygon
                 box(0.5, 0.5, 100, 100),
                 box(0, 0, 2.5, 2.5),
                 ]
+    return features
+
+
+@pytest.fixture(scope='module')
+def shapefile_features(polygon_features, tmpdir):
+    df = pd.DataFrame({'id': list(range(len(polygon_features))),
+                       'geometry': polygon_features
+                       }
+                      )
+    shapefile_name = '{}/zstats_features.shp'.format(tmpdir)
+    df2shp(df, shapefile_name, epsg=3070)
+    return shapefile_name
+
+
+# ugly work-around for fixtures not being supported as test parameters yet
+# https://github.com/pytest-dev/pytest/issues/349
+@pytest.fixture(params=['polygon_features',
+                        'shapefile_features'])
+def features(request,
+             polygon_features,
+             shapefile_features):
+    return {'polygon_features': polygon_features,
+            'shapefile_features': shapefile_features}[request.param]
+
+
+def test_zonal_stats(features, tmpdir):
+    filename, transform = geotiff(tmpdir, rotation=0.)
     result = zonal_stats(features, filename, out_shape=None,
                 stats=['mean'])
     result = result['mean']

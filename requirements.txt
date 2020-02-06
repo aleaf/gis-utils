@@ -2,10 +2,10 @@
 matplotlib
 numpy
 pandas
-gdal
+#gdal
 fiona
-rasterio>=1.0
-rasterstats
+#rasterio>=1.0
+#rasterstats
 shapely
-rtree
+#rtree
 pyproj>=2.0

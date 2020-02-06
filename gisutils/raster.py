@@ -4,8 +4,17 @@ import warnings
 import time
 import numpy as np
 import pandas as pd
-import rasterio
-from rasterio import Affine
+try:
+    from osgeo import gdal
+except:
+    gdal = False
+
+try:
+    import rasterio
+    from rasterio import Affine
+except:
+    rasterio = False
+
 from .project import project, get_proj_str
 from .shapefile import shp2df
 
@@ -32,6 +41,8 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
     -------
     affine.Affine instance
     """
+    if not rasterio:
+        raise ImportError("This function requires rasterio.")
     if dy is None:
         dy = dx
     return Affine(dx, 0., xul,
@@ -65,7 +76,8 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     -----
     requires gdal
     """
-    from osgeo import gdal
+    if not gdal:
+        raise ImportError("This function requires gdal.")
 
     # read in sample points
     if x is not None and isinstance(x[0], tuple):
@@ -174,6 +186,8 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
     will have the same number of rows and pixels as the original.
 
     """
+    if not rasterio:
+        raise ImportError("This function requires rasterio.")
     t0 = time.time()
     a = array
     # third dimension is the number of bands
@@ -233,7 +247,10 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
 
 def zonal_stats(feature, raster, out_shape=None,
                 stats=['mean']):
-    from rasterstats import zonal_stats
+    try:
+        from rasterstats import zonal_stats
+    except:
+        raise ImportError("This function requires rasterstats.")
 
     if not isinstance(feature, str):
         feature_name = 'feature'
