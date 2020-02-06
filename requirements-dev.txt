@@ -9,7 +9,6 @@ fiona
 rasterio>=1.0
 rasterstats
 shapely
-rtree
 pyproj>=2.0
 pyshp
 codecov
