@@ -2,6 +2,14 @@
 Release History
 ===============
 
+Version 0.1.2 (2020-2-12)
+--------------------------
+* fixed bug were project was returning shapely MultipartGeometry instances as lists
+
+Version 0.1.1 (2020-6-12)
+--------------------------
+* made rasterio and rasterstats dependencies optional
+
 Initial Release (2019-11-17)
 ----------------------------
 * includes shp2df and df2shp functions for reading and writing .shp or .dbf files to/from pandas dataframes

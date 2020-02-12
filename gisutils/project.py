@@ -2,6 +2,7 @@ import collections
 from functools import partial
 import numpy as np
 from shapely.ops import transform
+from shapely.geometry.base import BaseMultipartGeometry
 import pyproj
 from osgeo import osr
 
@@ -57,7 +58,9 @@ def project(geom, projection1, projection2):
             return transformer.transform(*geom)
 
     # sequence of tuples or shapely objects
-    if isinstance(geom, collections.Iterable):
+    if isinstance(geom, BaseMultipartGeometry):
+        geom0 = geom
+    elif isinstance(geom, collections.Iterable):
         geom = list(geom) # in case it's a generator
         geom0 = geom[0]
     else:
@@ -73,6 +76,6 @@ def project(geom, projection1, projection2):
     project = partial(transformer.transform)
 
     # do the transformation!
-    if isinstance(geom, collections.Iterable):
+    if isinstance(geom, collections.Iterable) and not isinstance(geom, BaseMultipartGeometry):
         return [transform(project, g) for g in geom]
     return transform(project, geom)

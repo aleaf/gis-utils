@@ -2,7 +2,8 @@ import os
 import numpy as np
 import pandas as pd
 import pyproj
-from shapely.geometry import Point
+from shapely.geometry import Point, MultiPolygon, box
+from shapely.geometry.base import BaseMultipartGeometry
 import pytest
 from ..project import get_proj_str, project
 from ..shapefile import df2shp
@@ -56,3 +57,13 @@ def test_project_point(input):
     assert isinstance(point_2, list)
     for p in point_3:
         assert np.allclose(list(p.coords)[0], point_1)
+
+
+def test_project_multipolygon():
+
+    p1 = box(0, 0, 1, 1)
+    p2 = box(0, 1, 2, 1)
+    geom = MultiPolygon([p1, p2])
+    result = project(geom, 'epsg:3070', 'epsg:26916')
+    assert isinstance(result, BaseMultipartGeometry)
+    assert isinstance(result, MultiPolygon)
