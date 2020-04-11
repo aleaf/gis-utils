@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+from scipy.interpolate import griddata
 import rasterio
 from rasterio import Affine
 from rasterio.crs import CRS
@@ -84,26 +85,22 @@ def test_yll_to_yul(yll_height_rotation):
     assert np.allclose(yll2, yll)
 
 
-def test_get_values_at_points_geotiff(tmpdir):
-    filename, transform = geotiff(tmpdir, rotation=0.)
-    result = get_values_at_points(filename,
-                                  x=[2.5, 7.5, -1],
-                                  y=[2.5, 7.5, -1],
+@pytest.mark.parametrize('method', ('nearest', 'linear'))
+@pytest.mark.parametrize('x, y, rotation, expected', (([2.5, 7.5, -1], [2.5, 7.5, -1], 0., {'nearest': [2, 1, -9999],
+                                                                                            'linear': [2, 1, -9999]
+                                                                                            }
+                                                       ),
+                                                      ([np.sqrt(2)*2.5, 12, -1], [0, 1, -1], 45., {'nearest': [2, 1, -9999],
+                                                                                        'linear': [2, 1, -9999]
+                                                                                        }
+                                                                                    )
+                                                     ))
+def test_get_values_at_points_geotiff(tmpdir, x, y, rotation, method, expected):
+    filename, transform = geotiff(tmpdir, rotation=rotation)
+    result = get_values_at_points(filename, x=x, y=y, method=method,
                                   out_of_bounds_errors='coerce')
     result[np.isnan(result)] = -9999
-    expected = [2, 1, -9999]
-    assert np.allclose(result, expected)
-
-    filename, transform = geotiff(tmpdir, rotation=45)
-    x = [3.5, 12, -1]
-    y = [1, 1, -1]
-    result = get_values_at_points(filename,
-                                  x=x,
-                                  y=y,
-                                  out_of_bounds_errors='coerce')
-    result[np.isnan(result)] = -9999
-    expected = [2, 1, -9999]
-    assert np.allclose(result, expected)
+    assert np.allclose(result, expected[method])
 
 
 def test_get_values_at_points_arc_ascii(tmpdir):

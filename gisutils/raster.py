@@ -4,6 +4,7 @@ import warnings
 import time
 import numpy as np
 import pandas as pd
+from scipy import interpolate
 try:
     from osgeo import gdal
 except:
@@ -51,7 +52,8 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
 
 
 def get_values_at_points(rasterfile, x=None, y=None, band=1,
-                         points=None, out_of_bounds_errors='coerce'):
+                         points=None, out_of_bounds_errors='coerce',
+                         method='nearest'):
     """Get raster values single point or list of points.
     Points must be in same coordinate system as raster.
 
@@ -68,6 +70,12 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     out_of_bounds_errors : {‘raise’, ‘coerce’}, default 'raise'
         * If 'raise', then x, y locations outside of the raster will raise an exception.
         * If 'coerce', then x, y locations outside of the raster will be set to NaN.
+    method : str 'nearest' or 'linear'
+        If 'nearest', the rasterio.DatasetReader.index() method is used to
+        return the raster values at the nearest cell centers. If 'linear',
+        scipy.interpolate.interpn is used for bilinear interpolation of values
+        between raster cell centers.
+
     Returns
     -------
     list of floats
@@ -80,6 +88,7 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         raise ImportError("This function requires gdal.")
 
     # read in sample points
+    array_shape = None
     if x is not None and isinstance(x[0], tuple):
         x, y = np.array(x).transpose()
         warnings.warn(
@@ -90,6 +99,12 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
             x = np.array(x)
         if not isinstance(y, np.ndarray):
             y = np.array(y)
+        if len(x.shape) > 1:
+            array_shape = x.shape
+            x = x.ravel()
+        if len(y.shape) > 1:
+            array_shape = y.shape
+            y = y.ravel()
     elif points is not None:
         if not isinstance(points, np.ndarray):
             x, y = np.array(points)
@@ -104,25 +119,50 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     print("reading data from {}...".format(rasterfile))
     with rasterio.open(rasterfile) as src:
         meta = src.meta
+        nodata = meta['nodata']
         data = src.read(band)
+
+    if method == 'nearest':
         i, j = src.index(x, y)
-    i = np.array(i, dtype=int)
-    j = np.array(j, dtype=int)
-    nrow, ncol = data.shape
-    nodata = meta['nodata']
+        i = np.array(i, dtype=int)
+        j = np.array(j, dtype=int)
+        nrow, ncol = data.shape
 
-    # mask row, col locations outside the raster
-    within = (i >= 0) & (i < nrow) & (j >= 0) & (j < ncol)
+        # mask row, col locations outside the raster
+        within = (i >= 0) & (i < nrow) & (j >= 0) & (j < ncol)
 
-    # get values at valid point locations
-    results = np.ones(len(i), dtype=float) * np.nan
-    results[within] = data[i[within], j[within]]
-    if out_of_bounds_errors == 'raise' and np.any(np.isnan(results)):
-        n_invalid = np.sum(np.isnan(results))
-        raise ValueError("{} points outside of {} extent.".format(n_invalid, rasterfile))
-
+        # get values at valid point locations
+        results = np.ones(len(i), dtype=float) * np.nan
+        results[within] = data[i[within], j[within]]
+        if out_of_bounds_errors == 'raise' and np.any(np.isnan(results)):
+            n_invalid = np.sum(np.isnan(results))
+            raise ValueError("{} points outside of {} extent.".format(n_invalid, rasterfile))
+    else:
+        # map the points to interpolate to onto the raster coordinate system
+        # (in case the raster is rotated)
+        x_rx, y_ry = ~src.transform * (x, y)
+        # coordinates of raster pixel centers in raster coordinate system
+        # (e.g. i,j = 0, 0 = 0.5, 0.5)
+        rx = np.arange(src.width) + 0.5
+        ry = np.arange(src.height) + 0.5
+        # pad the coordinates and the data, so that points within the outer pixels are still counted
+        padded = np.pad(data.astype(float), pad_width=1, mode='edge')
+        rx = np.array([0] + rx.tolist() + [rx[-1] + 0.5])
+        ry = np.array([0] + ry.tolist() + [ry[-1] + 0.5])
+        # exclude nodata points prior to interpolating
+        padded[padded == nodata] = np.nan
+        bounds_error = False
+        if out_of_bounds_errors == 'raise':
+            bounds_error = True
+        results = interpolate.interpn((ry, rx), padded,
+                                      (y_ry, x_rx), method=method,
+                                       bounds_error=bounds_error, fill_value=nodata)
     # convert nodata values to np.nans
     results[results == nodata] = np.nan
+
+    # reshape to input shape
+    if array_shape is not None:
+        results = np.reshape(results, array_shape)
     print("finished in {:.2f}s".format(time.time() - t0))
     return results
 
