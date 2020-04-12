@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.1.3 (2020-4-12)
+--------------------------
+* added bilinear interpolation to raster.get_values_at_points
+
 Version 0.1.2 (2020-2-12)
 --------------------------
 * fixed bug were project was returning shapely MultipartGeometry instances as lists
