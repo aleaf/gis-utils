@@ -191,74 +191,74 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         print("\nreading {}...".format(shp))
         if not os.path.exists(shp):
             raise IOError("{} doesn't exist".format(shp))
-        shp_obj = fiona.open(shp, 'r', layer=layer)
+        #shp_obj = fiona.open(shp, 'r', layer=layer)
+        with fiona.open(shp, 'r', layer=layer) as shp_obj:
 
-        if index is not None:
-            # handle capitolization issues with index field name
-            fields = list(shp_obj.schema['properties'].keys())
-            index = [f for f in fields if index.lower() == f.lower()][0]
+            if index is not None:
+                # handle capitolization issues with index field name
+                fields = list(shp_obj.schema['properties'].keys())
+                index = [f for f in fields if index.lower() == f.lower()][0]
 
-        attributes = []
-        # for reading in shapefiles
-        meta = shp_obj.meta
-        if meta['schema']['geometry'] != 'None':
-            if filter is not None:
-                print('filtering on bounding box {}, {}, {}, {}...'.format(*filter))
-            if clip:  # limit what is brought in to items in index of clipto
-                for line in shp_obj.filter(bbox=filter):
-                    props = line['properties']
-                    if not props[index] in clipto:
-                        continue
-                    props['geometry'] = line.get('geometry', None)
-                    attributes.append(props)
-            else:
-                for line in shp_obj.filter(bbox=filter):
-                    props = line['properties']
-                    props['geometry'] = line.get('geometry', None)
-                    attributes.append(props)
-            print('--> building dataframe... (may take a while for large shapefiles)')
-            shp_df = pd.DataFrame(attributes)
-            # reorder fields in the DataFrame to match the input shapefile
-            if len(attributes) > 0:
-                shp_df = shp_df[list(attributes[0].keys())]
-
-            # handle null geometries
-            if len(shp_df) == 0:
-                print('Empty dataframe! No features were read.')
+            attributes = []
+            # for reading in shapefiles
+            meta = shp_obj.meta
+            if meta['schema']['geometry'] != 'None':
                 if filter is not None:
-                    print('Check filter {} for consistency \
-with shapefile coordinate system'.format(filter))
-            # shp_df will only have a geometry column if it isn't empty
-            else:
-                geoms = shp_df.geometry.tolist()
-                if geoms.count(None) == 0:
-                    shp_df['geometry'] = [shape(g) for g in geoms]
-                elif skip_empty_geom:
-                    null_geoms = [i for i, g in enumerate(geoms) if g is None]
-                    shp_df.drop(null_geoms, axis=0, inplace=True)
-                    shp_df['geometry'] = [shape(g) for g in shp_df.geometry.tolist()]
+                    print('filtering on bounding box {}, {}, {}, {}...'.format(*filter))
+                if clip:  # limit what is brought in to items in index of clipto
+                    for line in shp_obj.filter(bbox=filter):
+                        props = line['properties']
+                        if not props[index] in clipto:
+                            continue
+                        props['geometry'] = line.get('geometry', None)
+                        attributes.append(props)
                 else:
-                    shp_df['geometry'] = [shape(g) if g is not None else None
-                                          for g in geoms]
+                    for line in shp_obj.filter(bbox=filter):
+                        props = line['properties']
+                        props['geometry'] = line.get('geometry', None)
+                        attributes.append(props)
+                print('--> building dataframe... (may take a while for large shapefiles)')
+                shp_df = pd.DataFrame(attributes)
+                # reorder fields in the DataFrame to match the input shapefile
+                if len(attributes) > 0:
+                    shp_df = shp_df[list(attributes[0].keys())]
 
-        # for reading in DBF files (just like shps, but without geometry)
-        else:
-            if clip:  # limit what is brought in to items in index of clipto
-                for line in shp_obj:
-                    props = line['properties']
-                    if not props[index] in clipto:
-                        continue
-                    attributes.append(props)
+                # handle null geometries
+                if len(shp_df) == 0:
+                    print('Empty dataframe! No features were read.')
+                    if filter is not None:
+                        print('Check filter {} for consistency \
+    with shapefile coordinate system'.format(filter))
+                # shp_df will only have a geometry column if it isn't empty
+                else:
+                    geoms = shp_df.geometry.tolist()
+                    if geoms.count(None) == 0:
+                        shp_df['geometry'] = [shape(g) for g in geoms]
+                    elif skip_empty_geom:
+                        null_geoms = [i for i, g in enumerate(geoms) if g is None]
+                        shp_df.drop(null_geoms, axis=0, inplace=True)
+                        shp_df['geometry'] = [shape(g) for g in shp_df.geometry.tolist()]
+                    else:
+                        shp_df['geometry'] = [shape(g) if g is not None else None
+                                              for g in geoms]
+
+            # for reading in DBF files (just like shps, but without geometry)
             else:
-                for line in shp_obj:
-                    attributes.append(line['properties'])
-            print('--> building dataframe... (may take a while for large shapefiles)')
-            shp_df = pd.DataFrame(attributes)
-            # reorder fields in the DataFrame to match the input shapefile
-            if len(attributes) > 0:
-                shp_df = shp_df[list(attributes[0].keys())]
+                if clip:  # limit what is brought in to items in index of clipto
+                    for line in shp_obj:
+                        props = line['properties']
+                        if not props[index] in clipto:
+                            continue
+                        attributes.append(props)
+                else:
+                    for line in shp_obj:
+                        attributes.append(line['properties'])
+                print('--> building dataframe... (may take a while for large shapefiles)')
+                shp_df = pd.DataFrame(attributes)
+                # reorder fields in the DataFrame to match the input shapefile
+                if len(attributes) > 0:
+                    shp_df = shp_df[list(attributes[0].keys())]
 
-        shp_obj.close()
         if len(shp_df) == 0:
             continue
         # set the dataframe index from the index column
