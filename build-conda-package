@@ -1,0 +1,48 @@
+#!/bin/bash
+# from https://medium.com/@giswqs/building-a-conda-package-and-uploading-it-to-anaconda-cloud-6a3abd1c5c52
+# change the package name to the existing PyPi package you would like to build and adjust the Python versions
+pkg='gis-utils'
+array=( 3.7 3.8 )
+npversion=1.18  # need to specify the numpy version otherwise it defaults 1.11
+
+echo "Building conda package ..."
+# cd ~ means that a /<package name> folder gets created in the home folder
+# not sure this is the best approach
+cd ~
+conda skeleton pypi $pkg
+#cd $pkg
+#wget https://conda.io/docs/_downloads/build1.sh
+#wget https://conda.io/docs/_downloads/bld.bat
+#cd ~
+
+# building conda packages for the current platform
+for i in "${array[@]}"
+do
+	conda-build --python $i --numpy $npversion $pkg
+done
+
+# convert package to other platforms
+cd ~
+platforms=( osx-64 linux-32 linux-64 win-32 win-64 )
+
+# get the files to convert
+# this assumes that the current platform is osx-64
+find $CONDA_PREFIX/conda-bld/osx-64/ -name *.tar.bz2 | while read file
+do
+    echo $file
+    #conda convert --platform all $file  -o $HOME/conda-bld/
+    for platform in "${platforms[@]}"
+    do
+       conda convert --platform $platform $file  -o $HOME/conda-bld/
+    done
+    
+done
+
+# upload packages to conda
+find $HOME/conda-bld/ -name *.tar.bz2 | while read file
+do
+    echo $file
+    anaconda upload $file
+done
+
+echo "Building conda package done!"
