@@ -27,7 +27,7 @@ def geotiff(tmpdir, rotation=45.):
     xul = _xll_to_xul(xll, height*dx, rotation)
     yul = _yll_to_yul(yll, height*dx, rotation)
     transform = get_transform(xul=xul, yul=yul,
-                              dx=dx, dy=dx, rotation=rotation)
+                              dx=dx, dy=-dx, rotation=rotation)
     return filename, transform
 
 
@@ -46,7 +46,7 @@ def arc_ascii(tmpdir):
     xul = _xll_to_xul(xll, height*dx, rotation)
     yul = _yll_to_yul(yll, height*dx, rotation)
     transform = get_transform(xul=xul, yul=yul,
-                              dx=dx, dy=dx, rotation=rotation)
+                              dx=dx, dy=-dx, rotation=rotation)
     return filename, transform
 
 
@@ -58,7 +58,7 @@ def test_get_transform():
     xul = _xll_to_xul(xll, height*dx, rotation)
     yul = _yll_to_yul(yll, height*dx, rotation)
     transform = get_transform(xul=xul, yul=yul,
-                              dx=dx, dy=dx, rotation=rotation)
+                              dx=dx, dy=-dx, rotation=rotation)
     transform2 = Affine(dx, 0., xul,
                         0., -dx, yul) * \
                  Affine.rotation(rotation)

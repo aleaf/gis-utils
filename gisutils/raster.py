@@ -45,9 +45,9 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
     if not rasterio:
         raise ImportError("This function requires rasterio.")
     if dy is None:
-        dy = dx
+        dy = -dx
     return Affine(dx, 0., xul,
-                  0., -dy, yul) * \
+                  0., dy, yul) * \
            Affine.rotation(rotation)
 
 
@@ -234,18 +234,22 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
     if len(a.shape) == 2:
         a = np.reshape(a, (1, a.shape[0], a.shape[1]))
     count, height, width = a.shape
-    if dy is None:
-        dy = dx
+
     if xul is not None and yul is not None:
+        # default to decreasing y coordinates if upper left is specified
+        if dy is None:  
+            dy = -dx
         xll = _xul_to_xll(xul, height * dy, rotation)
         yll = _yul_to_yll(yul, height * dy, rotation)
     elif xll is not None and yll is not None:
+        # default to increasing y coordinates if lower left is specified
+        if dy is None:
+            dy = dx
         xul = _xll_to_xul(xll, height * dy, rotation)
         yul = _yll_to_yul(yll, height * dy, rotation)
-
     if filename.lower().endswith(".tif"):
         trans = get_transform(xul=xul, yul=yul,
-                              dx=dx, dy=dy, rotation=rotation)
+                              dx=dx, dy=-np.abs(dy), rotation=rotation)
 
         # third dimension is the number of bands
         if len(a.shape) == 2:
