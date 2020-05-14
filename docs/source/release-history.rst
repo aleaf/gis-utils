@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.1.4 (2020-5-14)
+--------------------------
+* fix bug in raster module where a negative sign was being added to the y-spacing by default
+
 Version 0.1.3 (2020-4-12)
 --------------------------
 * added bilinear interpolation to raster.get_values_at_points
