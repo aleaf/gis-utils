@@ -46,8 +46,9 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     """
 
     # first check if output path exists
-    if os.path.split(shpname)[0] != '' and not os.path.isdir(os.path.split(shpname)[0]):
-        raise IOError("Output folder doesn't exist")
+    output_folder = os.path.abspath(os.path.split(shpname)[0])
+    if os.path.split(shpname)[0] != '' and not os.path.isdir(output_folder):
+        raise IOError("Output folder doesn't exist:\n{}".format(output_folder))
 
     # check for empty dataframe
     if len(dataframe) == 0:
