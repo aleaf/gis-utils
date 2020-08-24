@@ -1,6 +1,11 @@
+import os
 import numpy as np
 import pandas as pd
-from ..shapefile import (df2shp, shp2df, shp_properties,
+import shapely.wkt
+import pyproj
+import pytest
+from gisutils.projection import project
+from gisutils.shapefile import (df2shp, shp2df, shp_properties, get_shapefile_crs,
                          rename_fields_to_10_characters)
 
 
@@ -53,3 +58,64 @@ def test_rename_fields_to_10_characters(tmpdir):
     df2shp(df, f)
     df2 = shp2df(f)
     assert df2.columns.tolist() == expected
+
+
+@pytest.fixture(scope='module')
+def eel_river_polygon(tmpdir):
+    polygon_wkt = ('POLYGON ((-2345010.181299999 2314860.9384, '
+                   '-2292510.181299999 2314860.9384, -2292510.181299999 2281360.9384, '
+                   '-2345010.181299999 2281360.9384, -2345010.181299999 2314860.9384))')
+    polygon = shapely.wkt.loads(polygon_wkt)
+    return polygon
+
+
+@pytest.fixture(scope='module')
+def eel_river_polygon_shapefile(tmpdir, eel_river_polygon):
+    df = pd.DataFrame({'geometry': [eel_river_polygon],
+                       'id': [0]})
+    outfile = os.path.join(tmpdir, 'bbox.shp')
+
+    # write out to 5070
+    df2shp(df, outfile, epsg=5070)
+    return outfile
+
+
+def test_get_shapefile_crs(eel_river_polygon_shapefile):
+    crs = get_shapefile_crs(eel_river_polygon_shapefile)
+    expected = pyproj.crs.CRS.from_epsg(5070)
+    assert crs == expected
+
+
+@pytest.mark.parametrize('dest_crs', (None,
+                                      5070,
+                                      'epsg:26910',
+                                      'epsg:4269',
+                                      # an example of an uncommon CRS
+                                      ('PROJCS["NAD_1983_California_Teale_Albers",'
+                                       'GEOGCS["GCS_North_American_1983",'
+                                       'DATUM["D_North_American_1983",'
+                                       'SPHEROID["GRS_1980",6378137.0,298.257222101]],'
+                                       'PRIMEM["Greenwich",0.0],'
+                                       'UNIT["Degree",0.0174532925199433]],'
+                                       'PROJECTION["Albers"],'
+                                       'PARAMETER["False_Easting",0.0],'
+                                       'PARAMETER["False_Northing",-4000000.0],'
+                                       'PARAMETER["Central_Meridian",-120.0],'
+                                       'PARAMETER["Standard_Parallel_1",34.0],'
+                                       'PARAMETER["Standard_Parallel_2",40.5],'
+                                       'PARAMETER["Latitude_Of_Origin",0.0],'
+                                       'UNIT["Meter",1.0]]')
+                                      ))
+def test_df2shp(dest_crs, tmpdir, eel_river_polygon,
+                eel_river_polygon_shapefile):
+
+    # read in to dest_crs
+    df_dest_crs = shp2df(eel_river_polygon_shapefile, dest_crs=dest_crs)
+
+    # reproject back to 5070
+    if dest_crs is not None:
+        geoms = project(df_dest_crs['geometry'], dest_crs, 5070)
+    else:
+        geoms = df_dest_crs['geometry']
+    # verify that polygon is the same as original in 5070
+    assert geoms[0].almost_equals(eel_river_polygon)

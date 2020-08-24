@@ -1,12 +1,15 @@
+"""
+Functions for working with shapefiles.
+"""
 import os
 import collections
-import time
-from functools import partial
 import shutil
 import fiona
 from shapely.geometry import shape, mapping
 import numpy as np
 import pandas as pd
+import pyproj
+from gisutils.projection import get_authority_crs, project
 
 
 def df2shp(dataframe, shpname, geo_column='geometry', index=False,
@@ -142,7 +145,7 @@ def rename_fields_to_10_characters(columns, limit=10):
 
 
 def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
-           true_values=None, false_values=None, layer=None,
+           true_values=None, false_values=None, layer=None, dest_crs=None,
            skip_empty_geom=True):
     """Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)
      into pandas DataFrame.
@@ -166,6 +169,21 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         same as argument for pandas read_csv
     layer : str
         Layer name to read (if opening FileGDB)
+    dest_crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
     skip_empty_geom : True/False, default True
         Drops shapefile entries with null geometries.
         DBF files (which specify null geometries in their schema) will still be read.
@@ -187,12 +205,24 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
     else:
         clip = False
 
+    # destination crs for geometries read from shapefile(s)
+    if dest_crs is not None:
+        dest_crs = get_authority_crs(dest_crs)
+
     df = pd.DataFrame()
     for shp in shplist:
         print("\nreading {}...".format(shp))
         if not os.path.exists(shp):
             raise IOError("{} doesn't exist".format(shp))
-        #shp_obj = fiona.open(shp, 'r', layer=layer)
+
+        # crs of current shapefile
+        shp_crs = get_shapefile_crs(shp)
+        # set the destination CRS if none was specified
+        # so that heterogenious shapefiles will be output to
+        # the same CRS
+        if dest_crs is None and shp_crs is not None:
+            dest_crs = shp_crs
+
         with fiona.open(shp, 'r', layer=layer) as shp_obj:
 
             if index is not None:
@@ -268,6 +298,10 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
                 shp_df[index] = shp_df[index].astype(index_dtype)
             shp_df.index = shp_df[index].values
 
+        # reproject geometries to dest_crs if needed
+        if shp_crs is not None and dest_crs is not None and shp_crs != dest_crs:
+            shp_df['geometry'] = project(shp_df['geometry'], shp_crs, dest_crs)
+
         df = df.append(shp_df)
 
         # convert any t/f columns to numpy boolean data
@@ -315,5 +349,27 @@ def shp_properties(df):
               else df[c].dtype.name for c in df.columns]
     properties = collections.OrderedDict(list(zip(df.columns, dtypes)))
     return properties
+
+
+def get_shapefile_crs(shapefile):
+    """Get the coordinate reference system for a shapefile.
+
+    Parameters
+    ----------
+    shapefile : str
+        Path to a shapefile
+
+    Returns
+    -------
+    crs : pyproj.CRS instance
+
+    """
+    basename, ext = os.path.splitext(shapefile)
+    prjfile = basename + '.prj'
+    if os.path.exists(prjfile):
+        with open(prjfile) as src:
+            wkt = src.read()
+            crs = pyproj.crs.CRS.from_wkt(wkt)
+            return get_authority_crs(crs)
 
 

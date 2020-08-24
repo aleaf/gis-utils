@@ -1,3 +1,6 @@
+"""
+Functions for working with rasters.
+"""
 import os
 import collections
 import warnings
@@ -16,8 +19,8 @@ try:
 except:
     rasterio = False
 
-from .project import project, get_proj_str
-from .shapefile import shp2df
+from gisutils.projection import project, get_proj_str
+from gisutils.shapefile import shp2df
 
 
 def get_transform(xul, yul, dx, dy=None, rotation=0.):

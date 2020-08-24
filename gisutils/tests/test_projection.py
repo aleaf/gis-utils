@@ -1,0 +1,139 @@
+import os
+import numpy as np
+import pandas as pd
+import pyproj
+from shapely.geometry import Point, MultiPolygon, box
+from shapely.geometry.base import BaseMultipartGeometry
+import pytest
+from gisutils.projection import get_proj_str, project, get_authority_crs
+from ..shapefile import df2shp
+
+
+def test_import():
+    print('from gisutils import project...')
+    from gisutils import project
+    assert callable(project)  # verify that the function is imported, not the module
+    print('from gisutils.project import project...')
+    from gisutils.project import project
+    assert callable(project)  # old module name should still work for time being
+    print('from gisutils.project import get_proj_str...')
+    from gisutils.project import get_proj_str
+    assert callable(get_proj_str)
+    # after init is finished, the module project will be imported
+    # (changed the module name to avoid this behavior)
+    from gisutils import project
+    assert callable(project.project)  # original call to project function
+
+
+def test_get_proj_str(tmpdir):
+    proj_str = '+proj=tmerc +lat_0=0 +lon_0=-90 +k=0.9996 +x_0=520000 +y_0=-4480000 +datum=NAD83 +units=m +no_defs '
+    p1 = pyproj.Proj(proj_str)
+    f = os.path.join(tmpdir, 'junk.shp')
+    df2shp(pd.DataFrame({'id': [0],
+                         'geometry': [Point(0, 0)]
+                         }),
+           f, proj_str=proj_str)
+    proj4_2 = get_proj_str(f.replace('shp', 'prj'))
+    p2 = pyproj.Proj(proj4_2)
+    assert p1 == p2
+
+
+@pytest.mark.parametrize('crs', (True, False))
+@pytest.mark.parametrize('input', [(177955.0, 939285.0, 'epsg:5070', 'epsg:4269'),
+                                   (-91.87370, 34.93738, 'epsg:4269', 'epsg:5070')]
+)
+def test_project_point(input, crs):
+    x1, y1, proj_str_1, proj_str_2 = input
+    if crs:
+        proj_str_1 = get_authority_crs(proj_str_1)
+        proj_str_2 = get_authority_crs(proj_str_2)
+    point_1 = (x1, y1)
+
+    # tuple
+    point_2 = project(point_1, proj_str_1, proj_str_2)
+    point_3 = project(point_2, proj_str_2, proj_str_1)
+    assert isinstance(point_2, tuple)
+    assert np.allclose(point_1, point_3)
+
+    # list of tuples
+    points_5070_list = [point_1] * 3
+    point_2 = project(points_5070_list, proj_str_1, proj_str_2)
+    x, y = point_2
+    x2, y2 = project((x, y), proj_str_2, proj_str_1)
+    assert len(x) == len(x2)
+    assert np.allclose(np.array(points_5070_list).transpose(),
+                       np.array([x2, y2]))
+
+    # shapely Point
+    point_2 = project(Point(point_1), proj_str_1, proj_str_2)
+    point_3 = project(Point(point_2), proj_str_2, proj_str_1)
+    assert isinstance(point_2, Point)
+    assert np.allclose(point_1, point_3)
+
+    # list of Points
+    point_2 = project([Point(point_1),
+                          Point(point_1)], proj_str_1, proj_str_2)
+    point_3 = project(point_2, proj_str_2, proj_str_1)
+    assert isinstance(point_2, list)
+    for p in point_3:
+        assert np.allclose(list(p.coords)[0], point_1)
+
+
+def test_project_multipolygon():
+
+    p1 = box(0, 0, 1, 1)
+    p2 = box(0, 1, 2, 1)
+    geom = MultiPolygon([p1, p2])
+    result = project(geom, 'epsg:3070', 'epsg:26916')
+    assert isinstance(result, BaseMultipartGeometry)
+    assert isinstance(result, MultiPolygon)
+
+
+@pytest.mark.parametrize('input,expected_srs', (pytest.param(None, None, marks=pytest.mark.xfail),
+                                                (5070, 'EPSG:5070'),
+                                                ('epsg:26910', 'EPSG:26910'),
+                                                ('epsg:4269', 'EPSG:4269'),
+                                                 # an example of an uncommon CRS
+                                                (('PROJCS["NAD_1983_California_Teale_Albers",'
+                                                  'GEOGCS["GCS_North_American_1983",'
+                                                  'DATUM["D_North_American_1983",'
+                                                  'SPHEROID["GRS_1980",6378137.0,298.257222101]],'
+                                                  'PRIMEM["Greenwich",0.0],'
+                                                  'UNIT["Degree",0.0174532925199433]],'
+                                                  'PROJECTION["Albers"],'
+                                                  'PARAMETER["False_Easting",0.0],'
+                                                  'PARAMETER["False_Northing",-4000000.0],'
+                                                  'PARAMETER["Central_Meridian",-120.0],'
+                                                  'PARAMETER["Standard_Parallel_1",34.0],'
+                                                  'PARAMETER["Standard_Parallel_2",40.5],'
+                                                  'PARAMETER["Latitude_Of_Origin",0.0],'
+                                                  'UNIT["Meter",1.0]]'), 'EPSG:3310'),
+                                                # CRS for Nation Hydrogeologic Grid
+                                                # which has no epgs code
+                                                # (Albers WGS 84)
+                                                (('PROJCS["Albers NHG",'
+                                                  'GEOGCS["GCS_WGS_1984",'
+                                                  'DATUM["D_WGS_1984",'
+                                                  'SPHEROID["WGS_1984",6378137,298.257223563,'
+                                                  'AUTHORITY["EPSG","7030"]],'
+                                                  'TOWGS84[0,0,0,0,0,0,0],'
+                                                  'AUTHORITY["EPSG","6326"]],'
+                                                  'PRIMEM["Greenwich",0,'
+                                                  'AUTHORITY["EPSG","8901"]],'
+                                                  'UNIT["degree",0.0174532925199433,'
+                                                  'AUTHORITY["EPSG","9122"]],'
+                                                  'AUTHORITY["EPSG","4326"]],'
+                                                  'PROJECTION["Albers_Conic_Equal_Area"],'
+                                                  'PARAMETER["standard_parallel_1",29.5],'
+                                                  'PARAMETER["standard_parallel_2",45.5],'
+                                                  'PARAMETER["latitude_of_origin",23],'
+                                                  'PARAMETER["central_meridian",-96],'
+                                                  'PARAMETER["false_easting",0],'
+                                                  'PARAMETER["false_northing",0],'
+                                                  'UNIT["Meter",1]]'), None)
+                                      ))
+def test_get_authority_crs(input, expected_srs):
+    if expected_srs is None:
+        expected_srs = input
+    crs = get_authority_crs(input)
+    assert crs.srs == expected_srs
