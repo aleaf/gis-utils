@@ -7,6 +7,7 @@ from functools import partial
 import numpy as np
 from shapely.ops import transform
 from shapely.geometry.base import BaseMultipartGeometry
+import rasterio
 import pyproj
 from osgeo import osr
 
@@ -140,3 +141,118 @@ def get_authority_crs(crs):
     if authority is not None:
         return pyproj.CRS.from_user_input(authority)
     return crs
+
+
+def project_raster(source_raster, dest_raster, dest_crs,
+                   resampling=1, resolution=None, num_threads=2,
+                   driver='GTiff'):
+    """Reproject a raster from one coordinate system to another using Rasterio
+    code from: https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst
+
+    Parameters
+    ----------
+    source_raster : str
+        Filename of source raster.
+    dest_raster : str
+        Filename of reprojected (destination) raster. Extension of filename should
+        match the driver (e.g., '.tif' for GeoTIFF)
+    dest_crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
+    resampling : int
+        Type of resampling to use when reprojecting the raster
+        (see rasterio source code: https://github.com/mapbox/rasterio/blob/master/rasterio/enums.py)
+        nearest = 0
+        bilinear = 1
+        cubic = 2
+        cubic_spline = 3
+        lanczos = 4
+        average = 5
+        mode = 6
+        gauss = 7
+        max = 8
+        min = 9
+        med = 10
+        q1 = 11
+        q3 = 12
+    resolution : tuple of floats (len 2)
+        cell size of the output raster
+        (x resolution, y resolution)
+    driver : str
+        GDAL driver/format to use for writing dst_raster. Default is GeoTIFF.
+    """
+    from rasterio.warp import calculate_default_transform, reproject
+
+    with rasterio.open(source_raster) as src:
+        print('reprojecting {}...\nfrom:\n{}, res: {:.2e}, {:.2e}\n'.format(
+                source_raster,
+                src.crs.to_string(),
+                src.res[0], src.res[1],
+                dest_crs), end='')
+        affine, width, height = calculate_default_transform(
+            src.crs, dest_crs, src.width, src.height, *src.bounds, resolution=resolution)
+        kwargs = src.meta.copy()
+        kwargs.update({
+            'crs': dest_crs,
+            'transform': affine,
+            'affine': affine,
+            'width': width,
+            'height': height,
+            'driver': driver
+        })
+        with rasterio.open(dest_raster, 'w', **kwargs) as dst:
+            print('to:\n{}, res: {:.2e}, {:.2e}...'.format(dst.crs.to_string(), *dst.res))
+            for i in range(1, src.count + 1):
+                reproject(
+                    source=rasterio.band(src, i),
+                    destination=rasterio.band(dst, i),
+                    src_transform=src.transform,
+                    src_crs=src.crs,
+                    dst_transform=affine,
+                    dst_crs=dest_crs,
+                    resampling=resampling,
+                    num_threads=num_threads)
+    print('wrote {}.'.format(dest_raster))
+
+
+def get_rasterio_crs(crs):
+    """Returns a rasterio.crs.CRS representation
+    of the input coordinate reference system.
+
+    Parameters
+    ----------
+    crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
+
+    Returns
+    -------
+    rasterio_crs : rasterio.crs.CRS instance
+    """
+    crs = get_authority_crs(crs)
+    rasterio_crs = rasterio.crs.CRS.from_user_input(crs.srs)
+    return rasterio_crs

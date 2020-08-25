@@ -4,9 +4,11 @@ import pandas as pd
 import pyproj
 from shapely.geometry import Point, MultiPolygon, box
 from shapely.geometry.base import BaseMultipartGeometry
+import rasterio
 import pytest
-from gisutils.projection import get_proj_str, project, get_authority_crs
-from ..shapefile import df2shp
+from gisutils.projection import get_proj_str, project, get_authority_crs, project_raster, get_rasterio_crs
+from gisutils.shapefile import df2shp
+from gisutils.raster import write_raster, get_values_at_points
 
 
 def test_import():
@@ -137,3 +139,100 @@ def test_get_authority_crs(input, expected_srs):
         expected_srs = input
     crs = get_authority_crs(input)
     assert crs.srs == expected_srs
+
+
+@pytest.fixture
+def geotiff_3070(tmpdir, rotation=0):
+    filename = os.path.join(tmpdir, 'test_raster_3070.tif')
+
+    array = np.array([[0, 1, 2],
+                      [3, 4, 5],
+                      [6, 7, 8]])
+    dx = 5.
+    xll, yll = 0., 0.
+    write_raster(filename, array, xll=xll, yll=yll,
+                 dx=dx, dy=None, rotation=rotation, proj_str='epsg:3070',
+                 nodata=-9999)
+    return filename
+
+
+def test_project_raster(tmpdir, geotiff_3070):
+    filename = geotiff_3070
+    filename2 = os.path.join(tmpdir, 'test_raster_4269.tif')
+    project_raster(filename, filename2, 'epsg:4269',
+                   resampling=0, resolution=None, num_threads=2,
+                   driver='GTiff')
+    filename3 = os.path.join(tmpdir, 'test_raster_4269_3070.tif')
+    project_raster(filename2, filename3, 'epsg:3070',
+                   resampling=0, resolution=None, num_threads=2,
+                   driver='GTiff')
+    with rasterio.open(filename) as src:
+        array = src.read(1)
+    with rasterio.open(filename2) as src2:
+        array2 = src2.read(1)
+    with rasterio.open(filename3) as src3:
+        array3 = src3.read(1)
+
+    # verify that get_values_at_points returns the same results
+    # for the original and round-tripped 3070 rasters
+    original_cell_xcenters = np.array([0.5, 1.5, 2.5] * 3)
+    original_cell_ycenters = np.array([0.5] * 3 + [1.5] * 3 + [2.5] * 3)
+    x, y = src.transform * (original_cell_xcenters, original_cell_ycenters)
+    results = get_values_at_points(filename, x=x, y=y)
+    expected = np.arange(0, 9)
+    assert np.allclose(results, expected)
+    results3 = get_values_at_points(filename3, x=x, y=y)
+    assert np.allclose(results3, expected)
+
+
+@pytest.mark.parametrize('input,expected', (pytest.param(None, None, marks=pytest.mark.xfail),
+                                                (5070, 'EPSG:5070'),
+                                                ('epsg:26910', 'EPSG:26910'),
+                                                ('epsg:4269', 'EPSG:4269'),
+                                                 # an example of an uncommon CRS
+                                                (('PROJCS["NAD_1983_California_Teale_Albers",'
+                                                  'GEOGCS["GCS_North_American_1983",'
+                                                  'DATUM["D_North_American_1983",'
+                                                  'SPHEROID["GRS_1980",6378137.0,298.257222101]],'
+                                                  'PRIMEM["Greenwich",0.0],'
+                                                  'UNIT["Degree",0.0174532925199433]],'
+                                                  'PROJECTION["Albers"],'
+                                                  'PARAMETER["False_Easting",0.0],'
+                                                  'PARAMETER["False_Northing",-4000000.0],'
+                                                  'PARAMETER["Central_Meridian",-120.0],'
+                                                  'PARAMETER["Standard_Parallel_1",34.0],'
+                                                  'PARAMETER["Standard_Parallel_2",40.5],'
+                                                  'PARAMETER["Latitude_Of_Origin",0.0],'
+                                                  'UNIT["Meter",1.0]]'), 'EPSG:3310'),
+                                                # CRS for Nation Hydrogeologic Grid
+                                                # which has no epgs code
+                                                # (Albers WGS 84)
+                                                # apparently in some form of ESRI wkt dialect
+                                                (('PROJCS["Albers NHG",'
+                                                  'GEOGCS["GCS_WGS_1984",'
+                                                  'DATUM["D_WGS_1984",'
+                                                  'SPHEROID["WGS_1984",6378137,298.257223563,'
+                                                  'AUTHORITY["EPSG","7030"]],'
+                                                  'TOWGS84[0,0,0,0,0,0,0],'
+                                                  'AUTHORITY["EPSG","6326"]],'
+                                                  'PRIMEM["Greenwich",0,'
+                                                  'AUTHORITY["EPSG","8901"]],'
+                                                  'UNIT["degree",0.0174532925199433,'
+                                                  'AUTHORITY["EPSG","9122"]],'
+                                                  'AUTHORITY["EPSG","4326"]],'
+                                                  'PROJECTION["Albers_Conic_Equal_Area"],'
+                                                  'PARAMETER["standard_parallel_1",29.5],'
+                                                  'PARAMETER["standard_parallel_2",45.5],'
+                                                  'PARAMETER["latitude_of_origin",23],'
+                                                  'PARAMETER["central_meridian",-96],'
+                                                  'PARAMETER["false_easting",0],'
+                                                  'PARAMETER["false_northing",0],'
+                                                  'UNIT["Meter",1]]'), None)
+                                      ))
+def test_get_rasterio_crs(input, expected):
+    if expected is None:
+        expected = input
+    rasterio_crs = get_rasterio_crs(input)
+    # convert both rasterio crs and expected to pyproj to compare
+    # (small differences in the wkt output from rasterio will fail the Albers WGS 84 otherwise)
+    pyproj.crs.CRS.from_user_input(expected) == pyproj.crs.CRS.from_user_input(rasterio_crs)

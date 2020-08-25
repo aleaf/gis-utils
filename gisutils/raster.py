@@ -19,7 +19,7 @@ try:
 except:
     rasterio = False
 
-from gisutils.projection import project, get_proj_str
+from gisutils.projection import project, get_authority_crs
 from gisutils.shapefile import shp2df
 
 
@@ -55,10 +55,12 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
 
 
 def get_values_at_points(rasterfile, x=None, y=None, band=1,
-                         points=None, out_of_bounds_errors='coerce',
+                         points=None, points_crs=None,
+                         out_of_bounds_errors='coerce',
                          method='nearest'):
-    """Get raster values single point or list of points.
-    Points must be in same coordinate system as raster.
+    """Get raster values single point or list of points. Points in
+    a different coordinate reference system (CRS) specified with a points_crs will be
+    reprojected to the raster CRS prior to sampling.
 
     Parameters
     ----------
@@ -70,6 +72,24 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         Y coordinate locations
     points : list of tuples or 2D numpy array (npoints, (row, col))
         Points at which to sample raster.
+    points_crs : obj, optional
+        Coordinate reference system for points or x, y. Only needed if
+        different than the CRS for the raster, in which case the points will be
+        reprojected to the raster CRS prior to getting the values.
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
     out_of_bounds_errors : {‘raise’, ‘coerce’}, default 'raise'
         * If 'raise', then x, y locations outside of the raster will raise an exception.
         * If 'coerce', then x, y locations outside of the raster will be set to NaN.
@@ -85,10 +105,10 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
 
     Notes
     -----
-    requires gdal
+    requires rasterio
     """
-    if not gdal:
-        raise ImportError("This function requires gdal.")
+    if not rasterio:
+        raise ImportError("This function requires rasterio.")
 
     # read in sample points
     array_shape = None
@@ -124,6 +144,12 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         meta = src.meta
         nodata = meta['nodata']
         data = src.read(band)
+
+    if points_crs is not None:
+        points_crs = get_authority_crs(points_crs)
+        raster_crs = get_authority_crs(src.crs)
+        if points_crs != raster_crs:
+            x, y = project((x, y), points_crs, raster_crs)
 
     if method == 'nearest':
         i, j = src.index(x, y)

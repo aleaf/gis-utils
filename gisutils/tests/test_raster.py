@@ -8,9 +8,11 @@ from rasterio.crs import CRS
 from shapely.geometry import box
 import pytest
 from gisutils import df2shp
+from gisutils.projection import project
 from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
                       get_values_at_points, zonal_stats)
+from .test_projection import geotiff_3070
 
 
 def geotiff(tmpdir, rotation=45.):
@@ -112,6 +114,25 @@ def test_get_values_at_points_arc_ascii(tmpdir):
     result[np.isnan(result)] = -9999
     expected = [2, 1, -9999]
     assert np.allclose(result, expected)
+
+
+def test_get_values_at_points_in_a_different_crs(geotiff_3070):
+
+    # get a dataset reader handle for the raster
+    with rasterio.open(geotiff_3070) as src:
+        pass
+    # points that represent the cell centers of the raster in epsg:3070
+    original_cell_xcenters = np.array([0.5, 1.5, 2.5] * 3)
+    original_cell_ycenters = np.array([0.5] * 3 + [1.5] * 3 + [2.5] * 3)
+    x, y = src.transform * (original_cell_xcenters, original_cell_ycenters)
+    results = get_values_at_points(geotiff_3070, x=x, y=y)
+    expected = np.arange(0, 9)
+    assert np.allclose(results, expected)
+
+    # reproject the points to epsg:4326
+    x_4326, y_4326 = project((x, y), 'epsg:3070', 'epsg:4326')
+    results2 = get_values_at_points(geotiff_3070, x=x_4326, y=y_4326, points_crs='epsg:4326')
+    assert np.allclose(results2, expected)
 
 
 @pytest.fixture(scope='module')
