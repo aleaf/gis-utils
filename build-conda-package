@@ -3,7 +3,7 @@
 # change the package name to the existing PyPi package you would like to build and adjust the Python versions
 pkg='gis-utils'
 array=( 3.7 3.8 )
-npversion=1.18  # need to specify the numpy version otherwise it defaults 1.11
+npversion=1.19  # need to specify the numpy version otherwise it defaults 1.11
 
 echo "Building conda package ..."
 # cd ~ means that a /<package name> folder gets created in the home folder
