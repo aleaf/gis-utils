@@ -2,6 +2,14 @@
 Release History
 ===============
 
+Version 0.2.0 (2020-8-26)
+--------------------------
+* add project_raster() function to reproject a raster to a different CRS
+* optional points_crs argument to get_values_at_points() for automatic reprojection when sampling rasters
+* optional destination CRS argument to shp2df for automatic reprojection when reading in shapefiles
+* add get_authority_crs() function that returns a pyproj.crs.CRS instance for robust comparison of coordinate reference systems
+* rename project module to projection, to avoid confusion with project() function
+
 Version 0.1.4 (2020-5-14)
 --------------------------
 * fix bug in raster module where a negative sign was being added to the y-spacing by default
