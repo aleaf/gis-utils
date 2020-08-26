@@ -54,6 +54,25 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
            Affine.rotation(rotation)
 
 
+def get_raster_crs(raster):
+    """Get the coordinate reference system for a shapefile.
+
+    Parameters
+    ----------
+    raster : str (filepath)
+        Path to a raster
+
+    Returns
+    -------
+    crs : pyproj.CRS instance
+
+    """
+    with rasterio.open(raster) as src:
+        if src.crs is not None:
+            crs = get_authority_crs(src.crs)
+            return crs
+
+
 def get_values_at_points(rasterfile, x=None, y=None, band=1,
                          points=None, points_crs=None,
                          out_of_bounds_errors='coerce',

@@ -8,11 +8,11 @@ from rasterio.crs import CRS
 from shapely.geometry import box
 import pytest
 from gisutils import df2shp
-from gisutils.projection import project
+from gisutils.projection import project, get_authority_crs
 from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
-                      get_values_at_points, zonal_stats)
-from .test_projection import geotiff_3070
+                      get_values_at_points, zonal_stats, get_raster_crs)
+from .test_projection import geotiff_3070, arc_ascii_3070
 
 
 def geotiff(tmpdir, rotation=45.):
@@ -133,6 +133,17 @@ def test_get_values_at_points_in_a_different_crs(geotiff_3070):
     x_4326, y_4326 = project((x, y), 'epsg:3070', 'epsg:4326')
     results2 = get_values_at_points(geotiff_3070, x=x_4326, y=y_4326, points_crs='epsg:4326')
     assert np.allclose(results2, expected)
+
+
+def test_get_raster_crs(geotiff_3070):
+    crs = get_raster_crs(geotiff_3070)
+    expected = get_authority_crs(3070)
+    assert crs == expected
+
+
+def test_get_arc_ascii_crs(arc_ascii_3070):
+    crs = get_raster_crs(arc_ascii_3070)
+    assert crs is None
 
 
 @pytest.fixture(scope='module')

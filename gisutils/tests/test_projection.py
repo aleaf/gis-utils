@@ -156,6 +156,21 @@ def geotiff_3070(tmpdir, rotation=0):
     return filename
 
 
+@pytest.fixture
+def arc_ascii_3070(tmpdir, rotation=0):
+    filename = os.path.join(tmpdir, 'test_arcascii_3070.asc')
+
+    array = np.array([[0, 1, 2],
+                      [3, 4, 5],
+                      [6, 7, 8]])
+    dx = 5.
+    xll, yll = 0., 0.
+    write_raster(filename, array, xll=xll, yll=yll,
+                 dx=dx, dy=None, rotation=rotation, proj_str='epsg:3070',
+                 nodata=-9999)
+    return filename
+
+
 def test_project_raster(tmpdir, geotiff_3070):
     filename = geotiff_3070
     filename2 = os.path.join(tmpdir, 'test_raster_4269.tif')
