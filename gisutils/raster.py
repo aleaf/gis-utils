@@ -5,6 +5,14 @@ import os
 import collections
 import warnings
 import time
+import fiona
+from fiona.crs import to_string
+from shapely.geometry import box, shape, mapping, Polygon
+from shapely import wkt
+import rasterio
+from rasterio import Affine
+from rasterio.mask import mask
+
 import numpy as np
 import pandas as pd
 from scipy import interpolate
@@ -13,14 +21,8 @@ try:
 except:
     gdal = False
 
-try:
-    import rasterio
-    from rasterio import Affine
-except:
-    rasterio = False
-
-from gisutils.projection import project, get_authority_crs
-from gisutils.shapefile import shp2df
+from gisutils.projection import project, get_authority_crs, project_raster
+from gisutils.shapefile import shp2df, get_shapefile_crs
 
 
 def get_transform(xul, yul, dx, dy=None, rotation=0.):
@@ -45,8 +47,6 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
     -------
     affine.Affine instance
     """
-    if not rasterio:
-        raise ImportError("This function requires rasterio.")
     if dy is None:
         dy = -dx
     return Affine(dx, 0., xul,
@@ -126,8 +126,6 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     -----
     requires rasterio
     """
-    if not rasterio:
-        raise ImportError("This function requires rasterio.")
 
     # read in sample points
     array_shape = None
@@ -274,8 +272,6 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
     will have the same number of rows and pixels as the original.
 
     """
-    if not rasterio:
-        raise ImportError("This function requires rasterio.")
     t0 = time.time()
     a = array
     # third dimension is the number of bands
@@ -458,3 +454,207 @@ def _yll_to_yul(yul, height, rotation=0.):
     theta = rotation * np.pi / 180
     return yul + (np.cos(theta) * height)
 
+
+def clip_raster(inraster, clip_features, outraster,
+                clip_features_crs=None,
+                clip_kwargs={},
+                **project_kwargs):
+    """Clip raster to feature extent(s), write the output
+    to a new raster file. If the feature extent(s) are in
+    a different coordinate reference system, the raster will first
+    be reprojected to that CRS and then clipped. The output raster
+    will be in the CRS of the clip features.
+
+    Parameters
+    ----------
+    inraster : str
+        Path to a raster file readable by rasterio.open
+    clip_features : str or list-like
+        Shapefile or sequence of features. Features can be in
+        any format accepted by gisutils.raster.get_feature_geojson()
+    outraster : str
+        Filename for output raster.
+    clip_features_crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
+    project_kwargs :
+    clip_kwargs: dict
+        Keyword arguments to rasterio.mask
+    kwargs : key word arguments to gisutils.projection.project_raster()
+        These are only used if the clip features are
+        in a different coordinate system, in which case
+        the raster will be reprojected into that coordinate
+        system.
+    """
+
+    with rasterio.open(inraster) as src:
+        raster_crs = get_authority_crs(src.crs)
+
+    # start with assumption of same coordinates
+    if clip_features_crs is None:
+        clip_features_crs = raster_crs
+    # get the clip feature crs from shapefile
+    if isinstance(clip_features, str) and os.path.exists(clip_features):
+        clip_features_crs = get_shapefile_crs(clip_features)
+    # otherwise if clip feature crs was specified
+    else:
+        clip_features_crs = get_authority_crs(clip_features_crs)
+
+    # convert the clip_features to geojson
+    geoms = get_feature_geojson(clip_features)
+    print('input raster crs:\n{}\n\n'.format(raster_crs),
+          'clip feature crs:\n{}\n'.format(clip_features_crs))
+    # if the coordinate systems are not the same
+    # reproject the raster first before clipping
+    # this could be greatly sped up by first clipping the input raster prior to reprojecting
+    if raster_crs != clip_features_crs:
+        tmpraster = 'tmp.tif'
+        tmpraster2 = 'tmp2.tif'
+        print('Input raster and clip feature(s) are in different coordinate systems.\n'
+              'Reprojecting input raster from\n{}\nto\n{}\n'.format(raster_crs, clip_features_crs))
+        # make prelim clip of raster to speed up reprojection
+        xmin, xmax, ymin, ymax = get_geojson_collection_bounds(geoms)
+        longest_side = np.max([xmax - xmin, ymax - ymin])
+        bounds = box(xmin, ymin, xmax, ymax).buffer(longest_side * 0.1)
+        bounds = project(bounds, clip_features_crs, raster_crs)
+        _clip_raster(inraster, [bounds], tmpraster, **clip_kwargs)
+        project_raster(tmpraster, tmpraster2, clip_features_crs, **project_kwargs)
+        inraster = tmpraster2
+
+    _clip_raster(inraster, geoms, outraster, **clip_kwargs)
+
+    if raster_crs != clip_features_crs:
+        for tmp in [tmpraster, tmpraster2]:
+            if os.path.exists(tmp):
+                print('removing {}...'.format(tmp))
+                os.remove(tmp)
+    print('Done.')
+
+
+def _clip_raster(inraster, features, outraster, **kwargs):
+    """Clips a raster to clip_features in the same coordinate
+    reference system, write the output to a new raster file.
+
+
+    Parameters
+    ----------
+    inraster : str
+        Path to a raster file readable by rasterio.open
+    features : str or list-like
+        Shapefile or sequence of clip_features. Features can be in
+        any format accepted by gisutils.raster.get_feature_geojson()
+    outraster : str
+        Filename for output raster.
+    kwargs : dict
+        Keyword arguments to rasterio.open for writing the output raster.
+    """
+    # convert the clip_features to geojson
+    geoms = get_feature_geojson(features)
+    with rasterio.open(inraster) as src:
+        print('clipping {}...'.format(inraster))
+
+        defaults = {'crop': True,
+                    'nodata': src.nodata}
+        defaults.update(kwargs)
+
+        out_image, out_transform = mask(src, geoms, **defaults)
+        out_meta = src.meta.copy()
+
+        out_meta.update({"driver": "GTiff",
+                         "height": out_image.shape[1],
+                         "width": out_image.shape[2],
+                         "transform": out_transform})
+
+        with rasterio.open(outraster, "w", **out_meta) as dest:
+            dest.write(out_image)
+            print('wrote {}'.format(outraster))
+
+
+def get_feature_geojson(features):
+    """convert input clip_features to list of clip_features in the
+    geojson format.
+
+    Parameters
+    ----------
+    features : str (shapefile path) or list of clip_features
+        If clip_features is a list, the clip_features can be in shapely polygon
+        or wkt format (e.g. input to shapely.geometry.shape())
+
+    Returns
+    -------
+    geoms : list of geojson clip_features
+    """
+
+    # clip_features is a single shapely geometry
+    if isinstance(features, Polygon):
+        geoms = [mapping(features)]
+    # clip_features is a single geojson geometry
+    elif isinstance(features, dict):
+        geoms = [features]
+    elif isinstance(features, str):
+        # clip_features is a single wkt string
+        try:
+            geoms = [mapping(wkt.loads(features))]
+        # assume clip_features are in a shapefile
+        except:
+            if os.path.exists(features):
+                with fiona.open(features, "r") as shp:
+                    geoms = [feature["geometry"] for feature in shp]
+            else:
+                raise TypeError('Unrecognized feature type: {}'.format(features))
+    elif isinstance(features, list):
+        # clip_features are geo-json
+        if isinstance(features[0], dict):
+            geoms = features
+        # clip_features are wkt strings
+        elif isinstance(features[0], str):
+            try:
+                geoms = [mapping(wkt.loads(f)) for f in features]
+            except:
+                raise TypeError('Unrecognized feature type: {}'.format(features))
+        # clip_features are shapely geometries
+        else:
+            try:
+                mapping(features[0])
+                geoms = [mapping(f) for f in features]
+            except:
+                raise TypeError('Unrecognized feature type: {}'.format(features))
+    else:
+        raise TypeError('Unrecognized feature type: {}'.format(features))
+    return geoms
+
+
+def get_geojson_collection_bounds(geojsoncollection):
+    """Get the bounds for a collection of geojson clip_features.
+
+    Parameters
+    ----------
+    geojsoncollection : sequence
+        Sequence of geojson clip_features
+
+    Returns
+    -------
+    xmin, xmax, ymin, ymax
+
+    """
+    xmin, xmax = 0, 0
+    ymin, ymax = 0, 0
+    for feature in geojsoncollection:
+        for crds in feature['coordinates']:
+            a = np.array(crds)
+            x, y = a[:, 0], a[:, 1]
+            xmin, xmax = np.min(x, xmin), np.max(x, xmax)
+            ymin, ymax = np.min(y, ymin), np.max(y, ymax)
+    return xmin, xmax, ymin, ymax

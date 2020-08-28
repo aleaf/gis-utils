@@ -27,10 +27,10 @@ def test_import():
     assert callable(project.project)  # original call to project function
 
 
-def test_get_proj_str(tmpdir):
+def test_get_proj_str(test_output_path):
     proj_str = '+proj=tmerc +lat_0=0 +lon_0=-90 +k=0.9996 +x_0=520000 +y_0=-4480000 +datum=NAD83 +units=m +no_defs '
     p1 = pyproj.Proj(proj_str)
-    f = os.path.join(tmpdir, 'junk.shp')
+    f = os.path.join(test_output_path, 'junk.shp')
     df2shp(pd.DataFrame({'id': [0],
                          'geometry': [Point(0, 0)]
                          }),
@@ -142,8 +142,8 @@ def test_get_authority_crs(input, expected_srs):
 
 
 @pytest.fixture
-def geotiff_3070(tmpdir, rotation=0):
-    filename = os.path.join(tmpdir, 'test_raster_3070.tif')
+def geotiff_3070(test_output_path, rotation=0):
+    filename = os.path.join(test_output_path, 'test_raster_3070.tif')
 
     array = np.array([[0, 1, 2],
                       [3, 4, 5],
@@ -157,8 +157,8 @@ def geotiff_3070(tmpdir, rotation=0):
 
 
 @pytest.fixture
-def arc_ascii_3070(tmpdir, rotation=0):
-    filename = os.path.join(tmpdir, 'test_arcascii_3070.asc')
+def arc_ascii_3070(test_output_path, rotation=0):
+    filename = os.path.join(test_output_path, 'test_arcascii_3070.asc')
 
     array = np.array([[0, 1, 2],
                       [3, 4, 5],
@@ -171,13 +171,13 @@ def arc_ascii_3070(tmpdir, rotation=0):
     return filename
 
 
-def test_project_raster(tmpdir, geotiff_3070):
+def test_project_raster(test_output_path, geotiff_3070):
     filename = geotiff_3070
-    filename2 = os.path.join(tmpdir, 'test_raster_4269.tif')
+    filename2 = os.path.join(test_output_path, 'test_raster_4269.tif')
     project_raster(filename, filename2, 'epsg:4269',
                    resampling=0, resolution=None, num_threads=2,
                    driver='GTiff')
-    filename3 = os.path.join(tmpdir, 'test_raster_4269_3070.tif')
+    filename3 = os.path.join(test_output_path, 'test_raster_4269_3070.tif')
     project_raster(filename2, filename3, 'epsg:3070',
                    resampling=0, resolution=None, num_threads=2,
                    driver='GTiff')

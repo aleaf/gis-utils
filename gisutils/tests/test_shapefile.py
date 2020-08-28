@@ -16,7 +16,7 @@ def test_shp_properties():
     assert shp_properties(df) == {'name': 'str', 'reach': 'int', 'value': 'float'}
 
 
-def test_shp_integer_dtypes(tmpdir):
+def test_shp_integer_dtypes(test_output_path):
 
     # verify that pandas is recasting numpy ints as python ints when converting to dict
     # (numpy ints invalid for shapefiles)
@@ -25,23 +25,23 @@ def test_shp_integer_dtypes(tmpdir):
         assert isinstance(d[i][0], int)
 
     df = pd.DataFrame({'r': np.arange(100), 'c': np.arange(100)})
-    f = '{}/ints.dbf'.format(tmpdir)
+    f = '{}/ints.dbf'.format(test_output_path)
     df2shp(df, f)
     df2 = shp2df(f)
     assert np.all(df == df2)
 
 
-def test_shp_boolean_dtypes(tmpdir):
+def test_shp_boolean_dtypes(test_output_path):
 
     df = pd.DataFrame([False, True]).transpose()
     df.columns = ['true', 'false']
-    f = '{}/bool.dbf'.format(tmpdir)
+    f = '{}/bool.dbf'.format(test_output_path)
     df2shp(df, f)
     df2 = shp2df(f, true_values='True', false_values='False')
     assert np.all(df == df2)
 
 
-def test_rename_fields_to_10_characters(tmpdir):
+def test_rename_fields_to_10_characters(test_output_path):
     columns = ['atthelimit'] + ['overthelimit', 'overtheli1',
                                 'overthelimit2', 'overthelimit3', 'tomanycharacters']
     columns += ['{}{}'.format(s, i) for i, s in enumerate(['tomanycharacters'] * 11)]
@@ -53,7 +53,7 @@ def test_rename_fields_to_10_characters(tmpdir):
     result = rename_fields_to_10_characters(columns)
     assert set([len(s) for s in result]) == {10}
     assert result == expected
-    f = '{}/fields.dbf'.format(tmpdir)
+    f = '{}/fields.dbf'.format(test_output_path)
     df = pd.DataFrame(dict(zip(columns, [[1, 2]]* len(columns))))
     df2shp(df, f)
     df2 = shp2df(f)
@@ -61,7 +61,7 @@ def test_rename_fields_to_10_characters(tmpdir):
 
 
 @pytest.fixture(scope='module')
-def eel_river_polygon(tmpdir):
+def eel_river_polygon(test_output_path):
     polygon_wkt = ('POLYGON ((-2345010.181299999 2314860.9384, '
                    '-2292510.181299999 2314860.9384, -2292510.181299999 2281360.9384, '
                    '-2345010.181299999 2281360.9384, -2345010.181299999 2314860.9384))')
@@ -70,10 +70,10 @@ def eel_river_polygon(tmpdir):
 
 
 @pytest.fixture(scope='module')
-def eel_river_polygon_shapefile(tmpdir, eel_river_polygon):
+def eel_river_polygon_shapefile(test_output_path, eel_river_polygon):
     df = pd.DataFrame({'geometry': [eel_river_polygon],
                        'id': [0]})
-    outfile = os.path.join(tmpdir, 'bbox.shp')
+    outfile = os.path.join(test_output_path, 'bbox.shp')
 
     # write out to 5070
     df2shp(df, outfile, epsg=5070)
@@ -106,7 +106,7 @@ def test_get_shapefile_crs(eel_river_polygon_shapefile):
                                        'PARAMETER["Latitude_Of_Origin",0.0],'
                                        'UNIT["Meter",1.0]]')
                                       ))
-def test_df2shp(dest_crs, tmpdir, eel_river_polygon,
+def test_df2shp(dest_crs, test_output_path, eel_river_polygon,
                 eel_river_polygon_shapefile):
 
     # read in to dest_crs

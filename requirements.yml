@@ -10,7 +10,7 @@ dependencies:
 - pandas
 - gdal
 - fiona
-- rasterio>=1.0
+- rasterio
 - rasterstats
 - shapely
 - rtree

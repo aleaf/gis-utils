@@ -4,8 +4,8 @@ import pytest
 
 
 @pytest.fixture(scope="module", autouse=True)
-def tmpdir():
-    folder = 'gisutils/tests/tmp'
+def test_output_path():
+    folder = 'gisutils/tests/output'
     if os.path.isdir(folder):
         shutil.rmtree(folder)
     os.makedirs(folder)

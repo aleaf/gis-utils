@@ -256,7 +256,7 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
 
                 # handle null geometries
                 if len(shp_df) == 0:
-                    print('Empty dataframe! No features were read.')
+                    print('Empty dataframe! No clip_features were read.')
                     if filter is not None:
                         print('Check filter {} for consistency \
     with shapefile coordinate system'.format(filter))

@@ -8,15 +8,15 @@ from rasterio.crs import CRS
 from shapely.geometry import box
 import pytest
 from gisutils import df2shp
-from gisutils.projection import project, get_authority_crs
+from gisutils.projection import project, get_authority_crs, project_raster
 from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
-                      get_values_at_points, zonal_stats, get_raster_crs)
-from .test_projection import geotiff_3070, arc_ascii_3070
+                      get_values_at_points, zonal_stats, get_raster_crs, clip_raster)
+from gisutils.tests.test_projection import geotiff_3070, arc_ascii_3070
 
 
-def geotiff(tmpdir, rotation=45.):
-    filename = os.path.join(tmpdir, 'test_raster.tif')
+def geotiff(test_output_path, rotation=45.):
+    filename = os.path.join(test_output_path, 'test_raster.tif')
 
     array = np.array([[0, 1],
                       [2, 3]])
@@ -33,8 +33,8 @@ def geotiff(tmpdir, rotation=45.):
     return filename, transform
 
 
-def arc_ascii(tmpdir):
-    filename = os.path.join(tmpdir, 'test_raster.asc')
+def arc_ascii(test_output_path):
+    filename = os.path.join(test_output_path, 'test_raster.asc')
 
     array = np.array([[0, 1],
                       [2, 3]])
@@ -97,16 +97,16 @@ def test_yll_to_yul(yll_height_rotation):
                                                                                         }
                                                                                     )
                                                      ))
-def test_get_values_at_points_geotiff(tmpdir, x, y, rotation, method, expected):
-    filename, transform = geotiff(tmpdir, rotation=rotation)
+def test_get_values_at_points_geotiff(test_output_path, x, y, rotation, method, expected):
+    filename, transform = geotiff(test_output_path, rotation=rotation)
     result = get_values_at_points(filename, x=x, y=y, method=method,
                                   out_of_bounds_errors='coerce')
     result[np.isnan(result)] = -9999
     assert np.allclose(result, expected[method])
 
 
-def test_get_values_at_points_arc_ascii(tmpdir):
-    filename, _ = arc_ascii(tmpdir)
+def test_get_values_at_points_arc_ascii(test_output_path):
+    filename, _ = arc_ascii(test_output_path)
     result = get_values_at_points(filename,
                                   x=[2.5, 7.5, -1],
                                   y=[2.5, 7.5, -1],
@@ -157,12 +157,12 @@ def polygon_features():
 
 
 @pytest.fixture(scope='module')
-def shapefile_features(polygon_features, tmpdir):
+def shapefile_features(polygon_features, test_output_path):
     df = pd.DataFrame({'id': list(range(len(polygon_features))),
                        'geometry': polygon_features
                        }
                       )
-    shapefile_name = '{}/zstats_features.shp'.format(tmpdir)
+    shapefile_name = '{}/zstats_features.shp'.format(test_output_path)
     df2shp(df, shapefile_name, epsg=3070)
     return shapefile_name
 
@@ -178,8 +178,8 @@ def features(request,
             'shapefile_features': shapefile_features}[request.param]
 
 
-def test_zonal_stats(features, tmpdir):
-    filename, transform = geotiff(tmpdir, rotation=0.)
+def test_zonal_stats(features, test_output_path):
+    filename, transform = geotiff(test_output_path, rotation=0.)
     result = zonal_stats(features, filename, out_shape=None,
                 stats=['mean'])
     result = result['mean']
@@ -190,8 +190,8 @@ def test_zonal_stats(features, tmpdir):
     assert result['mean'].shape == (2, 2)
 
 
-def test_write_raster_geotiff(tmpdir):
-    fname, tranform = geotiff(tmpdir)
+def test_write_raster_geotiff(test_output_path):
+    fname, tranform = geotiff(test_output_path)
     expected = {'driver': 'GTiff',
                 'dtype': 'int32',
                 'nodata': -9999.0,
@@ -209,8 +209,8 @@ def test_write_raster_geotiff(tmpdir):
     assert data.sum() == 6
 
 
-def test_write_raster_ascii(tmpdir):
-    fname, transform = arc_ascii(tmpdir)
+def test_write_raster_ascii(test_output_path):
+    fname, transform = arc_ascii(test_output_path)
     data, metadata = read_arc_ascii(fname, shape=(2, 2))
     expected = {'ncols': 2,
                 'nrows': 2,
@@ -224,4 +224,34 @@ def test_write_raster_ascii(tmpdir):
     assert data.sum() == 6
 
 
+@pytest.fixture
+def geotiff_4269(test_output_path, geotiff_3070):
+    filename = geotiff_3070
+    filename2 = os.path.join(test_output_path, 'test_raster_4269.tif')
+    project_raster(filename, filename2, 'epsg:4269',
+                   resampling=0, resolution=None, num_threads=2,
+                   driver='GTiff')
+    return filename2
 
+
+@pytest.mark.parametrize('bounds', (box(5, 5, 10, 10),
+                                   [box(5, 5, 10, 10)],
+                                    {'type': 'Polygon',  # geojson
+                                     'coordinates': (((10.0, 5.0),
+                                                      (10.0, 10.0),
+                                                      (5.0, 10.0),
+                                                      (5.0, 5.0),
+                                                      (10.0, 5.0)),)},
+                                    'POLYGON ((10 5, 10 10, 5 10, 5 5, 10 5))'  # wkt
+                                    ))
+def test_clip_raster(geotiff_4269, bounds, test_output_path):
+    # make some bounds to clip out the "4" (middle value) in geotiff_3070
+    outraster = os.path.join(test_output_path, 'clipped_raster.tif')
+    clip_raster(geotiff_4269, clip_features=bounds, outraster=outraster,
+                clip_features_crs='epsg:3070',
+                clip_kwargs={}, resampling=0)
+    assert os.path.exists(outraster)
+    with rasterio.open(outraster) as src:
+        result = src.read(1)
+    result[result == src.nodata] = 0
+    assert result.sum() == 4
