@@ -13,6 +13,7 @@ from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
                       get_values_at_points, zonal_stats, get_raster_crs, clip_raster)
 from gisutils.tests.test_projection import geotiff_3070, arc_ascii_3070
+from gisutils.tests.test_shapefile import crs_test_params
 
 
 def geotiff(test_output_path, rotation=45.):
@@ -222,6 +223,24 @@ def test_write_raster_ascii(test_output_path):
                                  transform.d, transform.e, transform.f)}
     assert metadata == expected
     assert data.sum() == 6
+
+
+@pytest.mark.parametrize('crs', crs_test_params)
+def test_write_raster_crs(crs, test_output_path):
+    filename = os.path.join(test_output_path, 'test_raster.tif')
+
+    array = np.array([[0, 1],
+                      [2, 3]])
+    height, width = array.shape
+    dx = 5.
+    xll, yll = 0., 0.
+    write_raster(filename, array, xll=xll, yll=yll,
+                 dx=dx, dy=None, rotation=0, crs=crs,
+                 nodata=-9999)
+    if crs is not None:
+        with rasterio.open(filename) as src:
+            written_crs = get_authority_crs(src.crs)
+            assert written_crs == get_authority_crs(crs)
 
 
 @pytest.fixture

@@ -214,8 +214,8 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
 
 
 def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
-                 dx=1., dy=None, rotation=0., proj_str=None,
-                 nodata=-9999, fieldname='value', verbose=False,
+                 dx=1., dy=None, rotation=0., proj_str=None, crs=None,
+                 nodata=-9999, verbose=False,
                  **kwargs):
     """
     Write a numpy array to Arc Ascii grid or shapefile with the model
@@ -249,11 +249,23 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
         (optional, assumed equal to dx by default)
     rotation :
         rotation of the raster grid in degrees, clockwise
+    crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
     nodata : scalar
         Value to assign to np.nan entries (default -9999)
-    fieldname : str
-        Attribute field name for array values (shapefile export only).
-        (default 'values')
     kwargs:
         keyword arguments to np.savetxt (ascii)
         rasterio.open (GeoTIFF)
@@ -278,6 +290,11 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
     if len(a.shape) == 2:
         a = np.reshape(a, (1, a.shape[0], a.shape[1]))
     count, height, width = a.shape
+
+    if proj_str is not None:
+        warnings.warn('gisutils.write_raster: the proj_str argument is deprecated; use crs instead',
+                      DeprecationWarning)
+        crs = proj_str
 
     if xul is not None and yul is not None:
         # default to decreasing y coordinates if upper left is specified
@@ -307,7 +324,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
                 'nodata': nodata,
                 'dtype': a.dtype,
                 'driver': 'GTiff',
-                'crs': proj_str,
+                'crs': crs,
                 'transform': trans,
                 'compress': 'lzw'
                 }
