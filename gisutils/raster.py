@@ -457,8 +457,8 @@ def _yll_to_yul(yul, height, rotation=0.):
 
 def clip_raster(inraster, clip_features, outraster,
                 clip_features_crs=None,
-                clip_kwargs={},
-                **project_kwargs):
+                clip_kwargs=None,
+                project_kwargs=None, **kwargs):
     """Clip raster to feature extent(s), write the output
     to a new raster file. If the feature extent(s) are in
     a different coordinate reference system, the raster will first
@@ -489,15 +489,21 @@ def clip_raster(inraster, clip_features, outraster,
           - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
           - An object with a `to_wkt` method.
           - A :class:`pyproj.crs.CRS` class
-    project_kwargs :
     clip_kwargs: dict
         Keyword arguments to rasterio.mask
-    kwargs : key word arguments to gisutils.projection.project_raster()
+    project_kwargs : dict
+        Key word arguments to gisutils.projection.project_raster()
         These are only used if the clip features are
         in a different coordinate system, in which case
         the raster will be reprojected into that coordinate
         system.
+    kwargs : keyword arguments
+        Keyword arguments to rasterio.open for writing the output raster.
     """
+    if clip_kwargs is None:
+        clip_kwargs = {}
+    if project_kwargs is None:
+        project_kwargs = {}
 
     with rasterio.open(inraster) as src:
         raster_crs = get_authority_crs(src.crs)
@@ -519,7 +525,7 @@ def clip_raster(inraster, clip_features, outraster,
     # if the coordinate systems are not the same
     # reproject the raster first before clipping
     # this could be greatly sped up by first clipping the input raster prior to reprojecting
-    if raster_crs != clip_features_crs:
+    if raster_crs != clip_features_crs or len(project_kwargs) > 0:
         tmpraster = 'tmp.tif'
         tmpraster2 = 'tmp2.tif'
         print('Input raster and clip feature(s) are in different coordinate systems.\n'
@@ -529,11 +535,11 @@ def clip_raster(inraster, clip_features, outraster,
         longest_side = np.max([xmax - xmin, ymax - ymin])
         bounds = box(xmin, ymin, xmax, ymax).buffer(longest_side * 0.1)
         bounds = project(bounds, clip_features_crs, raster_crs)
-        _clip_raster(inraster, [bounds], tmpraster, **clip_kwargs)
-        project_raster(tmpraster, tmpraster2, clip_features_crs, **project_kwargs)
+        _clip_raster(inraster, [bounds], tmpraster, clip_kwargs=clip_kwargs)
+        project_raster(tmpraster, tmpraster2, clip_features_crs, **project_kwargs, **kwargs)
         inraster = tmpraster2
 
-    _clip_raster(inraster, geoms, outraster, **clip_kwargs)
+    _clip_raster(inraster, geoms, outraster, clip_kwargs=clip_kwargs, **kwargs)
 
     if raster_crs != clip_features_crs:
         for tmp in [tmpraster, tmpraster2]:
@@ -543,7 +549,7 @@ def clip_raster(inraster, clip_features, outraster,
     print('Done.')
 
 
-def _clip_raster(inraster, features, outraster, **kwargs):
+def _clip_raster(inraster, features, outraster, clip_kwargs, **kwargs):
     """Clips a raster to clip_features in the same coordinate
     reference system, write the output to a new raster file.
 
@@ -557,7 +563,9 @@ def _clip_raster(inraster, features, outraster, **kwargs):
         any format accepted by gisutils.raster.get_feature_geojson()
     outraster : str
         Filename for output raster.
-    kwargs : dict
+    clip_kwargs : dict
+        Keyword arguments to rasterio.mask for clipping the raster
+    kwargs : keyword arguments
         Keyword arguments to rasterio.open for writing the output raster.
     """
     # convert the clip_features to geojson
@@ -566,16 +574,18 @@ def _clip_raster(inraster, features, outraster, **kwargs):
         print('clipping {}...'.format(inraster))
 
         defaults = {'crop': True,
-                    'nodata': src.nodata}
-        defaults.update(kwargs)
+                    'nodata': src.nodata,
+                    }
+        defaults.update(clip_kwargs)
 
         out_image, out_transform = mask(src, geoms, **defaults)
         out_meta = src.meta.copy()
-
         out_meta.update({"driver": "GTiff",
+                         "compress": "lzw",
                          "height": out_image.shape[1],
                          "width": out_image.shape[2],
                          "transform": out_transform})
+        out_meta.update(kwargs)
 
         with rasterio.open(outraster, "w", **out_meta) as dest:
             dest.write(out_image)
