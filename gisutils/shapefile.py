@@ -1,6 +1,7 @@
 """
 Functions for working with shapefiles.
 """
+import warnings
 import os
 import collections
 import shutil
@@ -39,9 +40,21 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     proj_str : str
         PROJ string describing the coordinate reference system of the feature geometries
         in the 'geometry' column.
-    crs : dict
-        Fiona-style dictionary mapping of PROJ string describing the coordinate reference system of the feature geometries
-        in the 'geometry' column.
+    crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
 
     Returns
     -------
@@ -86,13 +99,18 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     # from a shapefile like fiona.open(inshpfile).crs
 
     if epsg is not None:
+        warnings.warn('gisutils.df2shp: the epsg argument is deprecated; use crs instead',
+                      DeprecationWarning)
         from fiona.crs import from_epsg
         crs = from_epsg(int(epsg))
     elif proj_str is not None:
+        warnings.warn('gisutils.df2shp: the proj_str argument is deprecated; use crs instead',
+                      DeprecationWarning)
         from fiona.crs import from_string
         crs = from_string(proj_str)
     elif crs is not None:
-        pass
+        crs = get_authority_crs(crs)
+        crs = crs.to_dict()
     else:
         pass
 

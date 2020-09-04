@@ -4,7 +4,7 @@ import pandas as pd
 import shapely.wkt
 import pyproj
 import pytest
-from gisutils.projection import project
+from gisutils.projection import project, get_authority_crs
 from gisutils.shapefile import (df2shp, shp2df, shp_properties, get_shapefile_crs,
                          rename_fields_to_10_characters)
 
@@ -86,28 +86,31 @@ def test_get_shapefile_crs(eel_river_polygon_shapefile):
     assert crs == expected
 
 
-@pytest.mark.parametrize('dest_crs', (None,
-                                      5070,
-                                      'epsg:26910',
-                                      'epsg:4269',
-                                      # an example of an uncommon CRS
-                                      ('PROJCS["NAD_1983_California_Teale_Albers",'
-                                       'GEOGCS["GCS_North_American_1983",'
-                                       'DATUM["D_North_American_1983",'
-                                       'SPHEROID["GRS_1980",6378137.0,298.257222101]],'
-                                       'PRIMEM["Greenwich",0.0],'
-                                       'UNIT["Degree",0.0174532925199433]],'
-                                       'PROJECTION["Albers"],'
-                                       'PARAMETER["False_Easting",0.0],'
-                                       'PARAMETER["False_Northing",-4000000.0],'
-                                       'PARAMETER["Central_Meridian",-120.0],'
-                                       'PARAMETER["Standard_Parallel_1",34.0],'
-                                       'PARAMETER["Standard_Parallel_2",40.5],'
-                                       'PARAMETER["Latitude_Of_Origin",0.0],'
-                                       'UNIT["Meter",1.0]]')
-                                      ))
-def test_df2shp(dest_crs, test_output_path, eel_river_polygon,
-                eel_river_polygon_shapefile):
+crs_test_params = (None,
+                   5070,
+                   'epsg:26910',
+                   'epsg:4269',
+                   # an example of an uncommon CRS
+                   ('PROJCS["NAD_1983_California_Teale_Albers",'
+                    'GEOGCS["GCS_North_American_1983",'
+                    'DATUM["D_North_American_1983",'
+                    'SPHEROID["GRS_1980",6378137.0,298.257222101]],'
+                    'PRIMEM["Greenwich",0.0],'
+                    'UNIT["Degree",0.0174532925199433]],'
+                    'PROJECTION["Albers"],'
+                    'PARAMETER["False_Easting",0.0],'
+                    'PARAMETER["False_Northing",-4000000.0],'
+                    'PARAMETER["Central_Meridian",-120.0],'
+                    'PARAMETER["Standard_Parallel_1",34.0],'
+                    'PARAMETER["Standard_Parallel_2",40.5],'
+                    'PARAMETER["Latitude_Of_Origin",0.0],'
+                    'UNIT["Meter",1.0]]')
+                                      )
+
+
+@pytest.mark.parametrize('dest_crs', crs_test_params)
+def test_shp2df_df2shp_crs(dest_crs, test_output_path, eel_river_polygon,
+                eel_river_polygon_shapefile, request):
 
     # read in to dest_crs
     df_dest_crs = shp2df(eel_river_polygon_shapefile, dest_crs=dest_crs)
@@ -119,3 +122,12 @@ def test_df2shp(dest_crs, test_output_path, eel_river_polygon,
         geoms = df_dest_crs['geometry']
     # verify that polygon is the same as original in 5070
     assert geoms[0].almost_equals(eel_river_polygon)
+
+    # check that when writing the polygon back to a shapefile
+    # a valid projection file is produced
+    output_shapefile = os.path.join(test_output_path, 'results.shp')
+    df2shp(df_dest_crs, output_shapefile, crs=dest_crs)
+    written_crs = get_shapefile_crs(output_shapefile)
+    if dest_crs is not None:
+        assert written_crs == get_authority_crs(dest_crs)
+
