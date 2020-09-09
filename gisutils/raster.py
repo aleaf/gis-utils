@@ -189,12 +189,14 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         x_rx, y_ry = ~src.transform * (x, y)
         # coordinates of raster pixel centers in raster coordinate system
         # (e.g. i,j = 0, 0 = 0.5, 0.5)
-        rx = np.arange(src.width) + 0.5
-        ry = np.arange(src.height) + 0.5
-        # pad the coordinates and the data, so that points within the outer pixels are still counted
-        padded = np.pad(data.astype(float), pad_width=1, mode='edge')
-        rx = np.array([0] + rx.tolist() + [rx[-1] + 0.5])
-        ry = np.array([0] + ry.tolist() + [ry[-1] + 0.5])
+        pad = 0.5  # extra padding, in pixels, so that points within the outer pixels are still counted
+        padding = np.arange(0.5 - pad, 0.5)
+        rx = padding.tolist() + list(np.arange(src.width) + 0.5) + list(src.width - padding)
+        ry = padding.tolist() + list(np.arange(src.height) + 0.5) + list(src.height - padding)
+        # pad the coordinates and the data
+        pad_width = int(np.ceil(pad))
+        padded = np.pad(data.astype(float), pad_width=pad_width, mode='edge')
+
         # exclude nodata points prior to interpolating
         padded[padded == nodata] = np.nan
         bounds_error = False
@@ -592,6 +594,8 @@ def _clip_raster(inraster, features, outraster, clip_kwargs, **kwargs):
 
         defaults = {'crop': True,
                     'nodata': src.nodata,
+                    #'pad': True,
+                    'all_touched': True
                     }
         defaults.update(clip_kwargs)
 

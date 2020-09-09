@@ -268,7 +268,7 @@ def test_clip_raster(geotiff_4269, bounds, test_output_path):
     outraster = os.path.join(test_output_path, 'clipped_raster.tif')
     clip_raster(geotiff_4269, clip_features=bounds, outraster=outraster,
                 clip_features_crs='epsg:3070',
-                clip_kwargs={}, resampling=0)
+                clip_kwargs={'all_touched': False}, resampling=0)
     assert os.path.exists(outraster)
     with rasterio.open(outraster) as src:
         result = src.read(1)
