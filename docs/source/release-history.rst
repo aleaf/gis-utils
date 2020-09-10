@@ -2,6 +2,12 @@
 Release History
 ===============
 
+Version 0.2.1 (2020-9-9)
+--------------------------
+* add clip_raster() function to clip rasters to features, with automatic reprojection of features to the raster CRS
+* replace `epsg` and `proj_str` arguments to :func:`df2shp` and :func:`write_raster`
+  with general crs argument using `pyproj`
+
 Version 0.2.0 (2020-8-26)
 --------------------------
 * add project_raster() function to reproject a raster to a different CRS
