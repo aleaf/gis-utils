@@ -4,7 +4,7 @@ Convenience functions for working with geospatial data in python.
 
 
 
-### Version 0.2.1
+### Version 0.2.2
 [![Build Status](https://travis-ci.com/aleaf/gis-utils.svg?branch=master)](https://travis-ci.com/aleaf/gis-utils)
 [![Coverage Status](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)
 [![PyPI version](https://badge.fury.io/py/gis-utils.svg)](https://badge.fury.io/py/gis-utils)
