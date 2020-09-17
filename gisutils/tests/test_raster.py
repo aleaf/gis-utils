@@ -88,6 +88,7 @@ def test_yll_to_yul(yll_height_rotation):
     assert np.allclose(yll2, yll)
 
 
+@pytest.mark.parametrize('size_thresh', (0, 1e9))
 @pytest.mark.parametrize('method', ('nearest', 'linear'))
 @pytest.mark.parametrize('x, y, rotation, expected', (([2.5, 7.5, -1], [2.5, 7.5, -1], 0., {'nearest': [2, 1, -9999],
                                                                                             'linear': [2, 1, -9999]
@@ -98,11 +99,14 @@ def test_yll_to_yul(yll_height_rotation):
                                                                                         }
                                                                                     )
                                                      ))
-def test_get_values_at_points_geotiff(test_output_path, x, y, rotation, method, expected):
+def test_get_values_at_points_geotiff(test_output_path, x, y, rotation, method, expected, size_thresh):
     filename, transform = geotiff(test_output_path, rotation=rotation)
     result = get_values_at_points(filename, x=x, y=y, method=method,
-                                  out_of_bounds_errors='coerce')
+                                  out_of_bounds_errors='coerce',
+                                  size_thresh=size_thresh)
     result[np.isnan(result)] = -9999
+    if size_thresh == 0:
+        method = 'nearest'
     assert np.allclose(result, expected[method])
 
 

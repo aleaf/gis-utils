@@ -76,7 +76,7 @@ def get_raster_crs(raster):
 def get_values_at_points(rasterfile, x=None, y=None, band=1,
                          points=None, points_crs=None,
                          out_of_bounds_errors='coerce',
-                         method='nearest'):
+                         method='nearest', size_thresh=1e9):
     """Get raster values single point or list of points. Points in
     a different coordinate reference system (CRS) specified with a points_crs will be
     reprojected to the raster CRS prior to sampling.
@@ -117,6 +117,15 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         return the raster values at the nearest cell centers. If 'linear',
         scipy.interpolate.interpn is used for bilinear interpolation of values
         between raster cell centers.
+    size_thresh : float
+        Prior to reading any data, the raster size (height * width) is evaluated. If
+        the size is larger than size_thresh, point values are read using
+        :meth:`rasterio.io.DatasetReader.sample` (regardless of the specified method),
+        which gets nearest pixel values without reading the whole dataset into memory.
+        A 32-bit raster of size=1e9 would require approximately 4 GB of memory
+        (at 4 bytes per pixel).
+        By default, 1e9.
+
 
     Returns
     -------
@@ -157,18 +166,28 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     t0 = time.time()
 
     print("reading data from {}...".format(rasterfile))
+    data = None
     with rasterio.open(rasterfile) as src:
         meta = src.meta
         nodata = meta['nodata']
-        data = src.read(band)
+        size = src.shape[0] * src.shape[1]
+        if size < size_thresh:
+            data = src.read(band)
 
-    if points_crs is not None:
-        points_crs = get_authority_crs(points_crs)
-        raster_crs = get_authority_crs(src.crs)
-        if points_crs != raster_crs:
-            x, y = project((x, y), points_crs, raster_crs)
+        # reproject coordinates if needed
+        if points_crs is not None:
+            points_crs = get_authority_crs(points_crs)
+            raster_crs = get_authority_crs(src.crs)
+            if points_crs != raster_crs:
+                x, y = project((x, y), points_crs, raster_crs)
 
-    if method == 'nearest':
+        if data is None:
+            results = src.sample(list(zip(x, y)))
+            results = np.squeeze(list(results))
+
+    if data is None:
+        pass
+    elif method == 'nearest':
         i, j = src.index(x, y)
         i = np.array(i, dtype=int)
         j = np.array(j, dtype=int)
