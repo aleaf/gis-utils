@@ -7,7 +7,10 @@ from functools import partial
 import numpy as np
 from shapely.ops import transform
 from shapely.geometry.base import BaseMultipartGeometry
-import rasterio
+try:
+    import rasterio
+except:
+    rasterio = False
 import pyproj
 from osgeo import osr
 
@@ -193,6 +196,8 @@ def project_raster(source_raster, dest_raster, dest_crs,
     driver : str
         GDAL driver/format to use for writing dst_raster. Default is GeoTIFF.
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     from rasterio.warp import calculate_default_transform, reproject
 
     with rasterio.open(source_raster) as src:
@@ -253,6 +258,8 @@ def get_rasterio_crs(crs):
     -------
     rasterio_crs : rasterio.crs.CRS instance
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     crs = get_authority_crs(crs)
     rasterio_crs = rasterio.crs.CRS.from_user_input(crs.srs)
     return rasterio_crs

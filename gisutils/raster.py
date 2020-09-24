@@ -2,19 +2,19 @@
 Functions for working with rasters.
 """
 import os
-import collections
 import warnings
 import time
 import fiona
-from fiona.crs import to_string
-from shapely.geometry import box, shape, mapping, Polygon
+from shapely.geometry import box, mapping, Polygon
 from shapely import wkt
-import rasterio
-from rasterio import Affine
-from rasterio.mask import mask
+try:
+    import rasterio
+    from rasterio import Affine
+    from rasterio.mask import mask
+except:
+    rasterio = False
 
 import numpy as np
-import pandas as pd
 from scipy import interpolate
 try:
     from osgeo import gdal
@@ -22,7 +22,7 @@ except:
     gdal = False
 
 from gisutils.projection import project, get_authority_crs, project_raster
-from gisutils.shapefile import shp2df, get_shapefile_crs
+from gisutils.shapefile import get_shapefile_crs
 
 
 def get_transform(xul, yul, dx, dy=None, rotation=0.):
@@ -47,6 +47,8 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
     -------
     affine.Affine instance
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     if dy is None:
         dy = -dx
     return Affine(dx, 0., xul,
@@ -67,6 +69,8 @@ def get_raster_crs(raster):
     crs : pyproj.CRS instance
 
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     with rasterio.open(raster) as src:
         if src.crs is not None:
             crs = get_authority_crs(src.crs)
@@ -135,6 +139,8 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     -----
     requires rasterio
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
 
     # read in sample points
     array_shape = None
@@ -305,6 +311,8 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
     will have the same number of rows and pixels as the original.
 
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     t0 = time.time()
     a = array
     # third dimension is the number of bands
@@ -538,6 +546,8 @@ def clip_raster(inraster, clip_features, outraster,
     kwargs : keyword arguments
         Keyword arguments to rasterio.open for writing the output raster.
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     if clip_kwargs is None:
         clip_kwargs = {}
     if project_kwargs is None:
@@ -606,6 +616,8 @@ def _clip_raster(inraster, features, outraster, clip_kwargs, **kwargs):
     kwargs : keyword arguments
         Keyword arguments to rasterio.open for writing the output raster.
     """
+    if not rasterio:
+        raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
     # convert the clip_features to geojson
     geoms = get_feature_geojson(features)
     with rasterio.open(inraster) as src:

@@ -2,6 +2,12 @@
 Release History
 ===============
 
+Version 0.2.3 (2020-9-24)
+--------------------------
+* make rasterio optional dependency again, so that downstream programs that use the shapefile or projection modules
+  don't need to depend on it
+
+
 Version 0.2.2 (2020-9-9)
 --------------------------
 * add clip_raster() function to clip rasters to features, with automatic reprojection of features to the raster CRS
