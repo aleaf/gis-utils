@@ -5,13 +5,14 @@ from scipy.interpolate import griddata
 import rasterio
 from rasterio import Affine
 from rasterio.crs import CRS
-from shapely.geometry import box
+from shapely.geometry import box, Point
 import pytest
-from gisutils import df2shp
+from gisutils import df2shp, shp2df
 from gisutils.projection import project, get_authority_crs, project_raster
 from gisutils.raster import (_xll_to_xul, _xul_to_xll, _yll_to_yul, _yul_to_yll,
                       write_raster, get_transform, read_arc_ascii,
-                      get_values_at_points, zonal_stats, get_raster_crs, clip_raster)
+                      get_values_at_points, points_to_raster, zonal_stats,
+                             get_raster_crs, clip_raster)
 from gisutils.tests.test_projection import geotiff_3070, arc_ascii_3070
 from gisutils.tests.test_shapefile import crs_test_params
 
@@ -278,3 +279,27 @@ def test_clip_raster(geotiff_4269, bounds, test_output_path):
         result = src.read(1)
     result[result == src.nodata] = 0
     assert result.sum() == 4
+
+
+@pytest.fixture
+def point_data(test_output_path):
+    df = pd.DataFrame({'x': [1, 3, 5, 5, 3, 2],
+                       'y': [1, 1, 1, 3, 2, 4],
+                       'values': np.random.randn(6),
+                       })
+    df['geometry'] = [Point(x, y) for x, y in zip(df.x, df.y)]
+    df2shp(df, test_output_path / 'test_points.shp', crs=5070)
+
+
+def test_points_to_raster(point_data, test_output_path):
+    bottom_shapefiles = [test_output_path / 'test_points.shp']
+    outfile = test_output_path / 'test_points_raster.tif'
+    points_to_raster(bottom_shapefiles,
+                             data_col='values',
+                             output_resolution=0.1,
+                             outfile=outfile)
+    source_data = shp2df(str(bottom_shapefiles[0]))
+    x = [g.x for g in source_data.geometry]
+    y = [g.y for g in source_data.geometry]
+    results = get_values_at_points(outfile, x, y)
+    assert np.allclose(results, source_data['values'].values)

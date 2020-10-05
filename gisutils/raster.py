@@ -22,7 +22,7 @@ except:
     gdal = False
 
 from gisutils.projection import project, get_authority_crs, project_raster
-from gisutils.shapefile import get_shapefile_crs
+from gisutils.shapefile import get_shapefile_crs, shp2df
 
 
 def get_transform(xul, yul, dx, dy=None, rotation=0.):
@@ -240,6 +240,85 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     return results
 
 
+def points_to_raster(points_shapefiles, nodata_value=-99,
+                     data_col='values',
+                     output_resolution=250,
+                     outfile='surface.tif', dest_crs=None):
+    """Interpolate point data to a regular grid using scipy.interpolate.griddata;
+    write results to a GeoTiff.
+
+    Parameters
+    ----------
+    points_shapefiles : shapefile or list of shapefiles
+        Point shapefiles with estimated data, assumed to be on a regular grid.
+    nodata_value : numeric
+        Value in `points_shapefiles` indicating no data
+    data_col : str
+        Field in `points_shapefiles` with estimated data.
+    output_resolution : numeric
+        Cell spacing of the output raster
+    outfile : stf
+        Output GeoTiff
+    dest_crs : obj
+        A Python int, dict, str, or pyproj.crs.CRS instance
+        passed to the pyproj.crs.from_user_input
+        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
+        Can be any of:
+          - PROJ string
+          - Dictionary of PROJ parameters
+          - PROJ keyword arguments for parameters
+          - JSON string with PROJ parameters
+          - CRS WKT string
+          - An authority string [i.e. 'epsg:4326']
+          - An EPSG integer code [i.e. 4326]
+          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
+          - An object with a `to_wkt` method.
+          - A :class:`pyproj.crs.CRS` class
+
+    Notes
+    -----
+
+    """
+
+    df = shp2df(points_shapefiles, dest_crs=dest_crs)
+
+    if dest_crs is None:
+        dest_crs = get_shapefile_crs(points_shapefiles)
+
+    # reshape the values column to a nrow x ncol array; convert invalid values to nans
+    data = df[data_col].values
+    data[data == nodata_value] = np.nan
+
+    # coordinates for the orignal grid (aligned with NHG cell corners)
+    x_points = np.array([g.x for g in df.geometry])
+    y_points = np.array([g.y for g in df.geometry])
+
+    # specifications for a new output_resolution grid aligned with NHG
+    # xul, yul is the cell center of the first cell (in the upper left corner)
+    xul = x_points.min()
+    yul = y_points.max()
+    dxy = output_resolution
+
+    # 1D arrays of x and y coordinates for each column, row
+    x = np.arange(np.min(x_points), np.max(x_points) + dxy, dxy)
+    y = np.arange(np.min(y_points), np.max(y_points) + dxy, dxy)
+
+    # 2D arrays of x and y coordinates for each point
+    X, Y = np.meshgrid(x, y)
+
+    # interpolate the values onto the new grid
+    # using bilinear interpolation
+    # `bounds_error=False` means extrapolated points will be filled with nans
+    results = interpolate.griddata((x_points, y_points), data, (X, Y),
+                                   method='linear')
+    results = np.flipud(results)
+
+    results = np.ma.masked_array(results, mask=np.isnan(results))
+    write_raster(outfile, results, xul=xul, yul=yul,
+                 dx=dxy, dy=dxy, rotation=0., crs=dest_crs,
+                 nodata=-9999)
+
+
 def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
                  dx=1., dy=None, rotation=0., proj_str=None, crs=None,
                  nodata=-9999, verbose=False,
@@ -250,7 +329,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
 
     Parameters
     ----------
-    filename : str
+    filename : str or pathlib.Path
         Path of output file. Export format is determined by
         file extention.
         '.asc'  Arc Ascii grid
@@ -337,7 +416,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
             dy = dx
         xul = _xll_to_xul(xll, height * dy, rotation)
         yul = _yll_to_yul(yll, height * dy, rotation)
-    if filename.lower().endswith(".tif"):
+    if str(filename).lower().endswith(".tif"):
         trans = get_transform(xul=xul, yul=yul,
                               dx=dx, dy=-np.abs(dy), rotation=rotation)
 
@@ -364,7 +443,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
                 dst.write_mask(~a.mask.transpose(1, 2, 0))
         print('wrote {}'.format(filename))
 
-    elif filename.lower().endswith(".asc"):
+    elif str(filename).lower().endswith(".asc"):
         path, fname = os.path.split(filename)
         fname, ext = os.path.splitext(fname)
         for band in range(count):
@@ -385,7 +464,7 @@ def zonal_stats(feature, raster, out_shape=None,
         from rasterstats import zonal_stats
     except:
         raise ImportError("This function requires rasterstats.")
-
+    # todo: add support for pathlib
     if not isinstance(feature, str):
         feature_name = 'feature'
     else:
@@ -560,6 +639,7 @@ def clip_raster(inraster, clip_features, outraster,
     if clip_features_crs is None:
         clip_features_crs = raster_crs
     # get the clip feature crs from shapefile
+    # todo: add support for pathlib instances
     if isinstance(clip_features, str) and os.path.exists(clip_features):
         clip_features_crs = get_shapefile_crs(clip_features)
     # otherwise if clip feature crs was specified
@@ -665,6 +745,7 @@ def get_feature_geojson(features):
     # clip_features is a single geojson geometry
     elif isinstance(features, dict):
         geoms = [features]
+    # todo: add support for pathlib
     elif isinstance(features, str):
         # clip_features is a single wkt string
         try:
@@ -681,6 +762,7 @@ def get_feature_geojson(features):
         if isinstance(features[0], dict):
             geoms = features
         # clip_features are wkt strings
+        # todo: add support for pathlib
         elif isinstance(features[0], str):
             try:
                 geoms = [mapping(wkt.loads(f)) for f in features]

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import shutil
 import pytest
 
@@ -9,4 +10,4 @@ def test_output_path():
     if os.path.isdir(folder):
         shutil.rmtree(folder)
     os.makedirs(folder)
-    return folder
+    return Path(folder)

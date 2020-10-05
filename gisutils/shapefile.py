@@ -2,6 +2,7 @@
 Functions for working with shapefiles.
 """
 import warnings
+from pathlib import Path
 import os
 import collections
 import shutil
@@ -212,7 +213,8 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         with attribute fields as columns; feature geometries are stored as
     shapely geometry objects in the 'geometry' column.
     """
-    if isinstance(shplist, str):
+    # todo: add support for pathlib
+    if isinstance(shplist, str) or isinstance(shplist, Path):
         shplist = [shplist]
     if not isinstance(true_values, list) and true_values is not None:
         true_values = [true_values]
@@ -382,9 +384,13 @@ def get_shapefile_crs(shapefile):
     crs : pyproj.CRS instance
 
     """
-    basename, ext = os.path.splitext(shapefile)
-    prjfile = basename + '.prj'
-    if os.path.exists(prjfile):
+    if not isinstance(shapefile, str) and \
+            isinstance(shapefile, collections.Iterable):
+        shapefile = shapefile[0]
+    shapefile = Path(shapefile)
+
+    prjfile = shapefile.with_suffix('.prj')
+    if prjfile.exists():
         with open(prjfile) as src:
             wkt = src.read()
             crs = pyproj.crs.CRS.from_wkt(wkt)
