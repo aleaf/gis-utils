@@ -213,7 +213,6 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         with attribute fields as columns; feature geometries are stored as
     shapely geometry objects in the 'geometry' column.
     """
-    # todo: add support for pathlib
     if isinstance(shplist, str) or isinstance(shplist, Path):
         shplist = [shplist]
     if not isinstance(true_values, list) and true_values is not None:

@@ -2,6 +2,13 @@
 Release History
 ===============
 
+
+Version 0.2.4 (2020-10-05)
+--------------------------
+* support for using pathlib Paths instead of strings
+* :func:`~gisutils.raster.points_to_raster` method to interpolate point data to a regular grid and write to a GeoTIFF.
+
+
 Version 0.2.3 (2020-9-24)
 --------------------------
 * make rasterio optional dependency again, so that downstream programs that use the shapefile or projection modules

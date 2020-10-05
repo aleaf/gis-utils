@@ -1,6 +1,7 @@
 """
 Functions for working with rasters.
 """
+from pathlib import Path
 import os
 import warnings
 import time
@@ -464,7 +465,6 @@ def zonal_stats(feature, raster, out_shape=None,
         from rasterstats import zonal_stats
     except:
         raise ImportError("This function requires rasterstats.")
-    # todo: add support for pathlib
     if not isinstance(feature, str):
         feature_name = 'feature'
     else:
@@ -639,9 +639,9 @@ def clip_raster(inraster, clip_features, outraster,
     if clip_features_crs is None:
         clip_features_crs = raster_crs
     # get the clip feature crs from shapefile
-    # todo: add support for pathlib instances
-    if isinstance(clip_features, str) and os.path.exists(clip_features):
-        clip_features_crs = get_shapefile_crs(clip_features)
+    if isinstance(clip_features, str) or isinstance(clip_features, Path):
+        if Path(clip_features).exists():
+            clip_features_crs = get_shapefile_crs(clip_features)
     # otherwise if clip feature crs was specified
     else:
         clip_features_crs = get_authority_crs(clip_features_crs)
@@ -745,8 +745,7 @@ def get_feature_geojson(features):
     # clip_features is a single geojson geometry
     elif isinstance(features, dict):
         geoms = [features]
-    # todo: add support for pathlib
-    elif isinstance(features, str):
+    elif isinstance(features, str) or isinstance(features, Path):
         # clip_features is a single wkt string
         try:
             geoms = [mapping(wkt.loads(features))]
@@ -762,7 +761,6 @@ def get_feature_geojson(features):
         if isinstance(features[0], dict):
             geoms = features
         # clip_features are wkt strings
-        # todo: add support for pathlib
         elif isinstance(features[0], str):
             try:
                 geoms = [mapping(wkt.loads(f)) for f in features]
