@@ -151,7 +151,7 @@ def geotiff_3070(test_output_path, rotation=0):
     dx = 5.
     xll, yll = 0., 0.
     write_raster(filename, array, xll=xll, yll=yll,
-                 dx=dx, dy=None, rotation=rotation, proj_str='epsg:3070',
+                 dx=dx, dy=None, rotation=rotation, crs='epsg:3070',
                  nodata=-9999)
     return filename
 

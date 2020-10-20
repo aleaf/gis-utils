@@ -131,12 +131,15 @@ def test_get_values_at_points_in_a_different_crs(geotiff_3070):
     original_cell_xcenters = np.array([0.5, 1.5, 2.5] * 3)
     original_cell_ycenters = np.array([0.5] * 3 + [1.5] * 3 + [2.5] * 3)
     x, y = src.transform * (original_cell_xcenters, original_cell_ycenters)
+    print(src.transform)
     results = get_values_at_points(geotiff_3070, x=x, y=y)
     expected = np.arange(0, 9)
     assert np.allclose(results, expected)
 
     # reproject the points to epsg:4326
+    print((x,y))
     x_4326, y_4326 = project((x, y), 'epsg:3070', 'epsg:4326')
+    print((x_4326, y_4326))
     results2 = get_values_at_points(geotiff_3070, x=x_4326, y=y_4326, points_crs='epsg:4326')
     assert np.allclose(results2, expected)
 

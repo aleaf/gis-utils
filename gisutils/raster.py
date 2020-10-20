@@ -185,8 +185,11 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         if points_crs is not None:
             points_crs = get_authority_crs(points_crs)
             raster_crs = get_authority_crs(src.crs)
-            if points_crs != raster_crs:
-                x, y = project((x, y), points_crs, raster_crs)
+            if raster_crs is None:
+                warnings.warn(f'Input raster {rasterfile} does not have a projection (CRS) assigned!')
+            else:
+                if points_crs is not None and points_crs != raster_crs:
+                    x, y = project((x, y), points_crs, raster_crs)
 
         if data is None:
             results = src.sample(list(zip(x, y)))

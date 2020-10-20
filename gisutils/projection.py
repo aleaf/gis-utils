@@ -139,11 +139,12 @@ def get_authority_crs(crs):
     http://pyproj4.github.io/pyproj/stable/api/crs/crs.html
 
     """
-    crs = pyproj.crs.CRS.from_user_input(crs)
-    authority = crs.to_authority()
-    if authority is not None:
-        return pyproj.CRS.from_user_input(authority)
-    return crs
+    if crs is not None:
+        crs = pyproj.crs.CRS.from_user_input(crs)
+        authority = crs.to_authority()
+        if authority is not None:
+            return pyproj.CRS.from_user_input(authority)
+        return crs
 
 
 def project_raster(source_raster, dest_raster, dest_crs,

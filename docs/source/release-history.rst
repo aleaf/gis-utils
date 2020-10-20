@@ -3,10 +3,15 @@ Release History
 ===============
 
 
+Version 0.2.5 (2020-10-20)
+--------------------------
+* fix raster.get_values_at_points to skip automatic reprojection if the raster is unprojected
+
 Version 0.2.4 (2020-10-05)
 --------------------------
 * support for using pathlib Paths instead of strings
 * :func:`~gisutils.raster.points_to_raster` method to interpolate point data to a regular grid and write to a GeoTIFF.
+* fix raster.get_values_at_points to skip automatic reprojection if the raster is unprojected
 
 
 Version 0.2.3 (2020-9-24)
