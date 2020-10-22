@@ -130,18 +130,18 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
         props = df.drop('geometry', axis=1).astype(object).to_dict(orient='records')
     else:
         props = [collections.OrderedDict(r) for i, r in df.drop('geometry', axis=1).astype(object).iterrows()]
-    print('writing {}...'.format(shpname))
+    print('writing {}...'.format(shpname), end='')
     with fiona.collection(shpname, "w", driver="ESRI Shapefile", crs=crs, schema=schema) as output:
         for i in range(length):
             output.write({'properties': props[i],
                           'geometry': mapped[i]})
-
     if prj is not None:
         try:
             print('copying {} --> {}...'.format(prj, "{}.prj".format(shpname[:-4])))
             shutil.copyfile(prj, "{}.prj".format(shpname[:-4]))
         except IOError:
             print('Warning: could not find specified prj file. shp will not be projected.')
+    print(' Done')
 
 
 def rename_fields_to_10_characters(columns, limit=10):
