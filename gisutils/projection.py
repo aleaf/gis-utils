@@ -2,7 +2,6 @@
 Functions for working with coordinate reference systems and projections.
 """
 import warnings
-import collections
 from functools import partial
 import numpy as np
 from shapely.ops import transform
@@ -13,6 +12,7 @@ except:
     rasterio = False
 import pyproj
 from osgeo import osr
+from gisutils.utils import is_sequence
 
 
 def __getattr__(name):
@@ -71,13 +71,13 @@ def project(geom, projection1, projection2):
         # tuple of scalar values
         if np.isscalar(geom[0]):
             return transformer.transform(*geom)
-        elif isinstance(geom[0], collections.Iterable):
+        elif is_sequence(geom[0]):
             return transformer.transform(*geom)
 
     # sequence of tuples or shapely objects
     if isinstance(geom, BaseMultipartGeometry):
         geom0 = geom
-    elif isinstance(geom, collections.Iterable):
+    elif is_sequence(geom):
         geom = list(geom) # in case it's a generator
         geom0 = geom[0]
     else:
@@ -93,7 +93,7 @@ def project(geom, projection1, projection2):
     project = partial(transformer.transform)
 
     # do the transformation!
-    if isinstance(geom, collections.Iterable) and not isinstance(geom, BaseMultipartGeometry):
+    if is_sequence(geom) and not isinstance(geom, BaseMultipartGeometry):
         return [transform(project, g) for g in geom]
     return transform(project, geom)
 

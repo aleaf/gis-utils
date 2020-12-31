@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 from gisutils.projection import get_authority_crs, project
+from gisutils.utils import is_sequence
 
 
 def df2shp(dataframe, shpname, geo_column='geometry', index=False,
@@ -384,7 +385,7 @@ def get_shapefile_crs(shapefile):
 
     """
     if not isinstance(shapefile, str) and \
-            isinstance(shapefile, collections.Iterable):
+            is_sequence(shapefile):
         shapefile = shapefile[0]
     shapefile = Path(shapefile)
 
