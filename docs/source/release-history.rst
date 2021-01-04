@@ -2,6 +2,9 @@
 Release History
 ===============
 
+Version 0.2.6 (2021-01-04)
+--------------------------
+* use WKT instead of proj dictionary mapping to define CRS when writing shapefiles (to avoid information loss; after https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona).
 
 Version 0.2.5 (2020-10-20)
 --------------------------

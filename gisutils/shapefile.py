@@ -1,6 +1,7 @@
 """
 Functions for working with shapefiles.
 """
+from distutils.version import LooseVersion
 import warnings
 from pathlib import Path
 import os
@@ -11,6 +12,7 @@ from shapely.geometry import shape, mapping
 import numpy as np
 import pandas as pd
 import pyproj
+from pyproj.enums import WktVersion
 from gisutils.projection import get_authority_crs, project
 from gisutils.utils import is_sequence
 
@@ -99,7 +101,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     # set projection (or use a prj file, which must be copied after shp is written)
     # alternatively, provide a crs in dictionary form as read using fiona
     # from a shapefile like fiona.open(inshpfile).crs
-
+    crs_wkt = None
     if epsg is not None:
         warnings.warn('gisutils.df2shp: the epsg argument is deprecated; use crs instead',
                       DeprecationWarning)
@@ -111,8 +113,14 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
         from fiona.crs import from_string
         crs = from_string(proj_str)
     elif crs is not None:
-        crs = get_authority_crs(crs)
-        crs = crs.to_dict()
+        proj_crs = get_authority_crs(crs)
+        # https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona
+        if LooseVersion(fiona.__gdal_version__) < LooseVersion("3.0.0"):
+            crs_wkt = proj_crs.to_wkt(WktVersion.WKT1_GDAL)
+        else:
+            # GDAL 3+ can use WKT2
+            crs_wkt = proj_crs.to_wkt()
+        crs = None
     else:
         pass
 
@@ -132,7 +140,8 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     else:
         props = [collections.OrderedDict(r) for i, r in df.drop('geometry', axis=1).astype(object).iterrows()]
     print('writing {}...'.format(shpname), end='')
-    with fiona.collection(shpname, "w", driver="ESRI Shapefile", crs=crs, schema=schema) as output:
+    #with fiona.collection(shpname, "w", driver="ESRI Shapefile", crs=crs, crs_wkt=crs_wkt, schema=schema) as output:
+    with fiona.open(shpname, "w", driver="ESRI Shapefile", crs=crs, crs_wkt=crs_wkt, schema=schema) as output:
         for i in range(length):
             output.write({'properties': props[i],
                           'geometry': mapped[i]})
