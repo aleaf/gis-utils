@@ -463,7 +463,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
 
 
 def zonal_stats(feature, raster, out_shape=None,
-                stats=['mean']):
+                stats=['mean'], **kwargs):
     try:
         from rasterstats import zonal_stats
     except:
@@ -478,7 +478,7 @@ def zonal_stats(feature, raster, out_shape=None,
                                                       feature_name
                                                       ))
     print(stats)
-    results = zonal_stats(feature, raster, stats=stats)
+    results = zonal_stats(feature, raster, stats=stats, **kwargs)
     print(out_shape)
     if out_shape is None:
         out_shape = (len(results),)

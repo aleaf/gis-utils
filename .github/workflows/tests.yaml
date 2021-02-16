@@ -32,10 +32,11 @@ jobs:
     - name: Conda info
       shell: bash -l {0}
       run: conda info
-    - name: Install gisutils
+    - name: Install gis-utils and ipykernel
       shell: bash -l {0}
       run: |
         pip install -e .
+        python -m ipykernel install --user --name gisutils_ci --display-name "gisutils_ci"
     - name: Conda list
       shell: bash -l {0}
       run: conda list

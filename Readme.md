@@ -1,6 +1,6 @@
 gis-utils
 -----------------------------------------------
-Convenience functions for working with geospatial data in python. 
+Convenience functions for working with geospatial data in python. The python geospatial stack (`fiona`, `shapely`, `rasterio`, `pyproj`, `rtree`, and others) combined with `numpy` and `pandas` provides enormous power and flexibility for geospatial analysis. However, common geoprocessing tasks often require several lines of boiler-plate code that can be tedious, repetitive and difficult to remember. `gis-utils` aims to distill these operations into simple, robust functions that can be imported into any workflow, to reduce cognitive load and allow effort to be focused on the more important parts of the analysis. 
 
 
 
@@ -9,16 +9,6 @@ Convenience functions for working with geospatial data in python.
 [![Coverage Status](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)
 [![PyPI version](https://badge.fury.io/py/gis-utils.svg)](https://badge.fury.io/py/gis-utils)
 [![Anaconda-Server Badge](https://anaconda.org/atleaf/gis-utils/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
-[![Anaconda-Server Badge](https://anaconda.org/atleaf/gis-utils/badges/version.svg)](https://anaconda.org/conda-forge/gis-utils)
-
-
-
-why gis-utils?
--------------------------
-The python geospatial stack (`fiona`, `shapely`, `rasterio`, `pyproj`, `rtree`, and others) combined with `numpy` and `pandas` provides enormous power and flexibility for geospatial analysis. However, common tasks such as reading and writing shapefiles and rasters, reprojecting vector features, or rasterizing vector data typically require several lines of boiler-plate code that can be cumbersome and easy to forget. `gis-utils` aims to distill these operations into simple, robust functions that can be imported into any workflow, allowing effort to be focused on the more important parts of the analysis. 
-
-For vector data, the [GeoPandas](http://geopandas.org/) project offers similar functionality in GeoDataFrame and GeoSeries structures that are tightly coupled to pandas. `gis-utils` aims to provide a looser, more minimal coupling, allowing the user more flexibility in the design of their workflows. For example, similar to GeoPandas, a shapefile can be read into a DataFrame with a single line of code, but instead of a GeoDataFrame, a standard DataFrame with a column of shapely objects is returned; it is
-up to the user to develop their own workflows using standard python data structures. `gis-utils` also provides functions for working with rasters.
 
 
 Getting Started
@@ -35,13 +25,14 @@ Installation
 
 **Python versions:**
 
-gis-utils requires **Python** 3.6 (or higher)
+gis-utils requires **Python** 3.8 (or higher)
 
 **Dependencies:**  
 numpy   
+scipy  
 pandas  
 fiona  
-gdal
+gdal  
 rasterio  
 rasterstats  
 shapely  
@@ -66,8 +57,8 @@ conda activate gisutils
 ```
 python setup.py install
 ```
-### Install in current location (to current python path)
-(i.e., for development)  
+### Install the source code in-place
+(for development or git users that want to easily *pull* the most recent code)  
 
 ```  
 pip install -e .

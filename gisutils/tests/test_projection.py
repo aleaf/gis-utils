@@ -134,6 +134,7 @@ def test_project_multipolygon():
                                                   'PARAMETER["false_northing",0],'
                                                   'UNIT["Meter",1]]'), None)
                                       ))
+
 def test_get_authority_crs(input, expected_srs):
     if expected_srs is None:
         expected_srs = input
