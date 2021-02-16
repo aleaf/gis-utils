@@ -8,16 +8,11 @@ Convenience functions for working with geospatial data in python. The python geo
 ![Tests](https://github.com/aleaf/gis-utils/workflows/Tests/badge.svg)
 [![Coverage Status](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)
 [![PyPI version](https://badge.fury.io/py/gis-utils.svg)](https://badge.fury.io/py/gis-utils)
-[![Anaconda-Server Badge](https://anaconda.org/atleaf/gis-utils/badges/installer/conda.svg)](https://conda.anaconda.org/conda-forge)
 
 
 Getting Started
 -----------------------------------------------
-
-
-### Bugs
-
-If you think you have discovered a bug in gis-utils in which you feel that the program does not work as intended, then we ask you to submit a [Github issue](https://github.com/aleaf/gis-utils/labels/bug).
+### [Demo of gis-utils](https://github.com/aleaf/gis-utils/blob/develop/examples/gis-utils_demo.ipynb)
 
 
 Installation
@@ -59,12 +54,15 @@ python setup.py install
 ```
 ### Install the source code in-place
 (for development or git users that want to easily *pull* the most recent code)  
+* don't forget the `'.'`!
 
 ```  
 pip install -e .
 ```
 
+### Bugs
 
+If you think you have discovered a bug in gis-utils in which you feel that the program does not work as intended, then we ask you to submit a [Github issue](https://github.com/aleaf/gis-utils/labels/bug).
 
 
 Disclaimer
