@@ -91,10 +91,15 @@ def test_yll_to_yul(yll_height_rotation):
 
 @pytest.mark.parametrize('size_thresh', (0, 1e9))
 @pytest.mark.parametrize('method', ('nearest', 'linear'))
-@pytest.mark.parametrize('x, y, rotation, expected', (([2.5, 7.5, -1], [2.5, 7.5, -1], 0., {'nearest': [2, 1, -9999],
-                                                                                            'linear': [2, 1, -9999]
-                                                                                            }
+@pytest.mark.parametrize('x, y, rotation, expected', 
+                         (([2.5, 7.5, -1], [2.5, 7.5, -1], 0., {'nearest': [2, 1, -9999],
+                                                                'linear': [2, 1, -9999]
+                                                                }
                                                        ),
+                          ([2.5], [2.5], 0., {'nearest': [2],
+                                    'linear': [2]
+                                    }
+                            ),
                                                       ([np.sqrt(2)*2.5, 12, -1], [0, 1, -1], 45., {'nearest': [2, 1, -9999],
                                                                                         'linear': [2, 1, -9999]
                                                                                         }

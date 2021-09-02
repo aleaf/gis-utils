@@ -1,6 +1,7 @@
 """
 Functions for working with coordinate reference systems and projections.
 """
+from pathlib import Path
 import warnings
 from functools import partial
 import numpy as np
@@ -37,7 +38,8 @@ def get_proj_str(prj):
     proj_str : string (http://trac.osgeo.org/proj/)
 
     """
-    prjfile = prj[:-4] + '.prj' # allows shp or prj to be argued
+    prjfile = Path(prj).with_suffix('.prj')
+    
     try:
         with open(prjfile) as src:
             prjtext = src.read()

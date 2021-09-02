@@ -40,6 +40,8 @@ def test_get_proj_str(test_output_path):
     assert p1 == p2
 
 
+
+    
 @pytest.mark.parametrize('crs', (True, False))
 @pytest.mark.parametrize('input', [(177955.0, 939285.0, 'epsg:5070', 'epsg:4269'),
                                    (-91.87370, 34.93738, 'epsg:4269', 'epsg:5070')]
@@ -81,6 +83,21 @@ def test_project_point(input, crs):
         assert np.allclose(list(p.coords)[0], point_1)
 
 
+def test_project_polygon():
+    nrow, ncol = 409, 614
+    spacing = 500 * .3048 # meters
+    height, width = nrow * spacing, ncol * spacing
+    xul = 617822.3
+    yul = 5177152.3
+    yll = 5177152.3 - height
+
+    bbox = box(xul, yll, xul + width, yll + height)
+    bbox_4269 = project(bbox, 26715, 4269)
+    assert np.allclose(bbox_4269.bounds, 
+                       (-91.47365622892065, 46.156112832038794, 
+                        -90.23414472574912, 46.739476860395655))
+    
+    
 def test_project_multipolygon():
 
     p1 = box(0, 0, 1, 1)

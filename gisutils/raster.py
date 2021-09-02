@@ -193,14 +193,15 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
 
         if data is None:
             results = src.sample(list(zip(x, y)))
-            results = np.squeeze(list(results))
+            results = np.atleast_1d(np.squeeze(list(results)))
+            results = results.astype(float)
 
     if data is None:
         pass
     elif method == 'nearest':
         i, j = src.index(x, y)
-        i = np.array(i, dtype=int)
-        j = np.array(j, dtype=int)
+        i = np.atleast_1d(np.array(i, dtype=int))
+        j = np.atleast_1d(np.array(j, dtype=int))
         nrow, ncol = data.shape
 
         # mask row, col locations outside the raster
