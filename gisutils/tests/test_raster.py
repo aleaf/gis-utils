@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import xarray as xr
 from scipy.interpolate import griddata
 import rasterio
 from rasterio import Affine
@@ -33,6 +34,26 @@ def geotiff(test_output_path, rotation=45.):
     transform = get_transform(xul=xul, yul=yul,
                               dx=dx, dy=-dx, rotation=rotation)
     return filename, transform
+
+
+def nc_file(test_output_path):
+    filename = os.path.join(test_output_path, 'test_netcdf.nc')
+
+    array = np.array([[0, 1],
+                      [2, 3]])
+    height, width = array.shape
+    dx = 5.
+    xll, yll = 0., 0.
+    x = xll + np.add.accumulate(np.ones(array.shape[1])*dx) - (dx/2)
+    y = yll + np.add.accumulate(np.ones(array.shape[0])*dx) - (dx/2)
+    y = y[::-1]
+    
+    da = xr.DataArray(array,
+                  dims=['y', 'x'],
+                  coords={'x': x, 'y': y},
+                  name='values')
+    da.to_netcdf(filename)
+    return filename, None
 
 
 def arc_ascii(test_output_path):
@@ -126,6 +147,18 @@ def test_get_values_at_points_arc_ascii(test_output_path):
     expected = [2, 1, -9999]
     assert np.allclose(result, expected)
 
+
+def test_get_values_at_points_netcdf(test_output_path):
+    filename, _ = nc_file(test_output_path)
+    result = get_values_at_points(filename,
+                                  x=[2.5, 7.5, -1],
+                                  y=[2.5, 7.5, -1],
+                                  xarray_variable='values',
+                                  out_of_bounds_errors='coerce')
+    result[np.isnan(result)] = -9999
+    expected = [2., 1., -9999.]
+    assert np.allclose(result, expected)
+    
 
 def test_get_values_at_points_in_a_different_crs(geotiff_3070):
 

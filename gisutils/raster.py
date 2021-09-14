@@ -16,6 +16,7 @@ except:
     rasterio = False
 
 import numpy as np
+import xarray as xr
 from scipy import interpolate
 try:
     from osgeo import gdal
@@ -80,6 +81,7 @@ def get_raster_crs(raster):
 
 def get_values_at_points(rasterfile, x=None, y=None, band=1,
                          points=None, points_crs=None,
+                         xarray_variable=None,
                          out_of_bounds_errors='coerce',
                          method='nearest', size_thresh=1e9):
     """Get raster values single point or list of points. Points in
@@ -89,7 +91,8 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
     Parameters
     ----------
     rasterfile : str
-        Filename of raster.
+        Filename of raster or NetCDF file. NetCDF files are assumed to
+        have x and y coordinates in the same CRS as the points.
     x : 1D array
         X coordinate locations
     y : 1D array
@@ -114,6 +117,11 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
           - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
           - An object with a `to_wkt` method.
           - A :class:`pyproj.crs.CRS` class
+    xarray_variable : str
+        If rasterfile is a NetCDF file, xarray_variable is the name
+        of the variable in raster file to sample. Only required
+        if rasterfile is a NetCDF file.
+        by default, None.
     out_of_bounds_errors : {‘raise’, ‘coerce’}, default 'raise'
         * If 'raise', then x, y locations outside of the raster will raise an exception.
         * If 'coerce', then x, y locations outside of the raster will be set to NaN.
@@ -174,69 +182,85 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
 
     print("reading data from {}...".format(rasterfile))
     data = None
-    with rasterio.open(rasterfile) as src:
-        meta = src.meta
-        nodata = meta['nodata']
-        size = src.shape[0] * src.shape[1]
-        if size < size_thresh:
-            data = src.read(band)
+    
+    # getting points from a netcdf file
+    if str(rasterfile).endswith('.nc'):
+        if xarray_variable is None:
+            raise ValueError('Input of NetCDF file for the raster '
+                             'requires specification of an xarray_variable.')
+        ds = xr.open_dataset(rasterfile)
+        
+        x = xr.DataArray(x, dims="z")
+        y = xr.DataArray(y, dims="z")
+        results = ds[xarray_variable].interp(x=x, y=y, method=method)
+        results = results.values
+        
+    # getting points from any raster openable by rasterio
+    else:
+    
+        with rasterio.open(rasterfile) as src:
+            meta = src.meta
+            nodata = meta['nodata']
+            size = src.shape[0] * src.shape[1]
+            if size < size_thresh:
+                data = src.read(band)
 
-        # reproject coordinates if needed
-        if points_crs is not None:
-            points_crs = get_authority_crs(points_crs)
-            raster_crs = get_authority_crs(src.crs)
-            if raster_crs is None:
-                warnings.warn(f'Input raster {rasterfile} does not have a projection (CRS) assigned!')
-            else:
-                if points_crs is not None and points_crs != raster_crs:
-                    x, y = project((x, y), points_crs, raster_crs)
+            # reproject coordinates if needed
+            if points_crs is not None:
+                points_crs = get_authority_crs(points_crs)
+                raster_crs = get_authority_crs(src.crs)
+                if raster_crs is None:
+                    warnings.warn(f'Input raster {rasterfile} does not have a projection (CRS) assigned!')
+                else:
+                    if points_crs is not None and points_crs != raster_crs:
+                        x, y = project((x, y), points_crs, raster_crs)
+
+            if data is None:
+                results = src.sample(list(zip(x, y)))
+                results = np.atleast_1d(np.squeeze(list(results)))
+                results = results.astype(float)
 
         if data is None:
-            results = src.sample(list(zip(x, y)))
-            results = np.atleast_1d(np.squeeze(list(results)))
-            results = results.astype(float)
+            pass
+        elif method == 'nearest':
+            i, j = src.index(x, y)
+            i = np.atleast_1d(np.array(i, dtype=int))
+            j = np.atleast_1d(np.array(j, dtype=int))
+            nrow, ncol = data.shape
 
-    if data is None:
-        pass
-    elif method == 'nearest':
-        i, j = src.index(x, y)
-        i = np.atleast_1d(np.array(i, dtype=int))
-        j = np.atleast_1d(np.array(j, dtype=int))
-        nrow, ncol = data.shape
+            # mask row, col locations outside the raster
+            within = (i >= 0) & (i < nrow) & (j >= 0) & (j < ncol)
 
-        # mask row, col locations outside the raster
-        within = (i >= 0) & (i < nrow) & (j >= 0) & (j < ncol)
+            # get values at valid point locations
+            results = np.ones(len(i), dtype=float) * np.nan
+            results[within] = data[i[within], j[within]]
+            if out_of_bounds_errors == 'raise' and np.any(np.isnan(results)):
+                n_invalid = np.sum(np.isnan(results))
+                raise ValueError("{} points outside of {} extent.".format(n_invalid, rasterfile))
+        else:
+            # map the points to interpolate to onto the raster coordinate system
+            # (in case the raster is rotated)
+            x_rx, y_ry = ~src.transform * (x, y)
+            # coordinates of raster pixel centers in raster coordinate system
+            # (e.g. i,j = 0, 0 = 0.5, 0.5)
+            pad = 0.5  # extra padding, in pixels, so that points within the outer pixels are still counted
+            padding = np.arange(0.5 - pad, 0.5)
+            rx = padding.tolist() + list(np.arange(src.width) + 0.5) + list(src.width - padding)
+            ry = padding.tolist() + list(np.arange(src.height) + 0.5) + list(src.height - padding)
+            # pad the coordinates and the data
+            pad_width = int(np.ceil(pad))
+            padded = np.pad(data.astype(float), pad_width=pad_width, mode='edge')
 
-        # get values at valid point locations
-        results = np.ones(len(i), dtype=float) * np.nan
-        results[within] = data[i[within], j[within]]
-        if out_of_bounds_errors == 'raise' and np.any(np.isnan(results)):
-            n_invalid = np.sum(np.isnan(results))
-            raise ValueError("{} points outside of {} extent.".format(n_invalid, rasterfile))
-    else:
-        # map the points to interpolate to onto the raster coordinate system
-        # (in case the raster is rotated)
-        x_rx, y_ry = ~src.transform * (x, y)
-        # coordinates of raster pixel centers in raster coordinate system
-        # (e.g. i,j = 0, 0 = 0.5, 0.5)
-        pad = 0.5  # extra padding, in pixels, so that points within the outer pixels are still counted
-        padding = np.arange(0.5 - pad, 0.5)
-        rx = padding.tolist() + list(np.arange(src.width) + 0.5) + list(src.width - padding)
-        ry = padding.tolist() + list(np.arange(src.height) + 0.5) + list(src.height - padding)
-        # pad the coordinates and the data
-        pad_width = int(np.ceil(pad))
-        padded = np.pad(data.astype(float), pad_width=pad_width, mode='edge')
-
-        # exclude nodata points prior to interpolating
-        padded[padded == nodata] = np.nan
-        bounds_error = False
-        if out_of_bounds_errors == 'raise':
-            bounds_error = True
-        results = interpolate.interpn((ry, rx), padded,
-                                      (y_ry, x_rx), method=method,
-                                       bounds_error=bounds_error, fill_value=nodata)
-    # convert nodata values to np.nans
-    results[results == nodata] = np.nan
+            # exclude nodata points prior to interpolating
+            padded[padded == nodata] = np.nan
+            bounds_error = False
+            if out_of_bounds_errors == 'raise':
+                bounds_error = True
+            results = interpolate.interpn((ry, rx), padded,
+                                        (y_ry, x_rx), method=method,
+                                        bounds_error=bounds_error, fill_value=nodata)
+        # convert nodata values to np.nans
+        results[results == nodata] = np.nan
 
     # reshape to input shape
     if array_shape is not None:
