@@ -16,16 +16,11 @@ def test_import():
     from gisutils import project
     assert callable(project)  # verify that the function is imported, not the module
     print('from gisutils.project import project...')
-    from gisutils.project import project
+    from gisutils.projection import project
     assert callable(project)  # old module name should still work for time being
     print('from gisutils.project import get_proj_str...')
-    from gisutils.project import get_proj_str
+    from gisutils.projection import get_proj_str
     assert callable(get_proj_str)
-    # after init is finished, the module project will be imported
-    # (changed the module name to avoid this behavior)
-    from gisutils import project
-    assert callable(project.project)  # original call to project function
-
 
 def test_get_proj_str(test_output_path):
     proj_str = '+proj=tmerc +lat_0=0 +lon_0=-90 +k=0.9996 +x_0=520000 +y_0=-4480000 +datum=NAD83 +units=m +no_defs '
