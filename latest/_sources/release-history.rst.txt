@@ -2,7 +2,7 @@
 Release History
 ===============
 
-Version 0.2.7 (2022-02-08)
+Version 0.3.0 (2022-02-08)
 --------------------------
 * drop support for python 3.8; add support for 3.10
 * get_values_at_points: add support for NetCDF files
