@@ -151,7 +151,7 @@ def get_authority_crs(crs):
 
 def project_raster(source_raster, dest_raster, dest_crs,
                    resampling=1, resolution=None, num_threads=2,
-                   driver='GTiff'):
+                   driver='GTiff', **kwargs):
     """Reproject a raster from one coordinate system to another using Rasterio
     code from: https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst
 
@@ -198,6 +198,8 @@ def project_raster(source_raster, dest_raster, dest_crs,
         (x resolution, y resolution)
     driver : str
         GDAL driver/format to use for writing dst_raster. Default is GeoTIFF.
+    **kwargs : dict
+        Keyword arguments to :meth:`rasterio.open` for writing the output raster.
     """
     if not rasterio:
         raise ModuleNotFoundError('This function requires rasterio. Please conda install rasterio.')
@@ -211,7 +213,9 @@ def project_raster(source_raster, dest_raster, dest_crs,
                 dest_crs), end='')
         affine, width, height = calculate_default_transform(
             src.crs, dest_crs, src.width, src.height, *src.bounds, resolution=resolution)
+        specified_kwargs = kwargs.copy()
         kwargs = src.meta.copy()
+        kwargs.update(specified_kwargs)
         kwargs.update({
             'crs': dest_crs,
             'transform': affine,

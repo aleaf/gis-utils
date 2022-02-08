@@ -39,7 +39,9 @@ def test_get_proj_str(test_output_path):
     
 @pytest.mark.parametrize('crs', (True, False))
 @pytest.mark.parametrize('input', [(177955.0, 939285.0, 'epsg:5070', 'epsg:4269'),
-                                   (-91.87370, 34.93738, 'epsg:4269', 'epsg:5070')]
+                                   (-91.87370, 34.93738, 'epsg:4269', 'epsg:5070'),
+                                   (-94.16583369760917, 31.142591218327198, 4269, 4326)
+                                   ]
 )
 def test_project_point(input, crs):
     x1, y1, proj_str_1, proj_str_2 = input
