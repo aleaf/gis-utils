@@ -1,7 +1,6 @@
 import warnings
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
+from . import _version
+__version__ = _version.get_versions()['version']
 
 from gisutils.projection import get_proj_str, get_authority_crs, project
 from gisutils.raster import get_values_at_points, get_raster_crs, write_raster

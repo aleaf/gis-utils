@@ -84,7 +84,7 @@ jobs:
     - name: Run tests
       shell: bash -l {0}
       run: |
-        pytest gisutils/test/test_notebooks.py
+        pytest gisutils/tests/test_notebooks.py
 
     - name: Build docs
       shell: bash -l {0}
