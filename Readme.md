@@ -8,7 +8,7 @@ Convenience functions for working with geospatial data in python. The python geo
 ![Tests](https://github.com/aleaf/gis-utils/workflows/Tests/badge.svg)
 [![Coverage Status](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)](https://codecov.io/github/aleaf/gis-utils/coverage.svg?branch=master)
 [![PyPI version](https://badge.fury.io/py/gis-utils.svg)](https://badge.fury.io/py/gis-utils)
-
+[![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 
 Getting Started
 -----------------------------------------------

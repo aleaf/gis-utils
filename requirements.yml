@@ -4,15 +4,20 @@ channels:
 - defaults
 dependencies:
 - python
+- ipython
+- jupyter
+- notebook
+- ipykernel
 - matplotlib
 - numpy
 - scipy
-- pandas
 - xarray
+- pandas
+- geopandas
 - gdal
 - fiona
 - rasterio
 - rasterstats
 - shapely
-- rtree
-- pyproj>=2.0
+- pyproj
+- pyshp

@@ -5,12 +5,14 @@ matplotlib
 numpy
 scipy
 pandas
+geopandas
+xarray
 gdal
 fiona
 rasterio
 rasterstats
 shapely
-pyproj>=2.0
+pyproj
 pyshp
 codecov
 coverage

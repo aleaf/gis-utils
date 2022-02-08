@@ -3,10 +3,12 @@ matplotlib
 numpy
 scipy
 pandas
+geopandas
+xarray
 #gdal
 fiona
 #rasterio
 #rasterstats
 shapely
 #rtree
-pyproj>=2.0
+pyproj
