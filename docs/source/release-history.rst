@@ -2,9 +2,12 @@
 Release History
 ===============
 
-Version 0.2.7 (2021-xx-xx)
+Version 0.2.7 (2022-02-08)
 --------------------------
+* drop support for python 3.8; add support for 3.10
 * get_values_at_points: add support for NetCDF files
+* project_raster: add kwargs
+* remove project.py and import warning
 
 Version 0.2.6 (2021-01-04)
 --------------------------

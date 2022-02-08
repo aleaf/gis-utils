@@ -189,8 +189,11 @@ texinfo_documents = [
      'Miscellaneous'),
 ]
 
-
-
+# SSL verification when building docs
+# (used by Intersphinx)
+# uncomment this if you don't want to verify at all
+#tls_verify = False
+#tls_cacert = "/path/to/cert"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
