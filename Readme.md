@@ -20,7 +20,7 @@ Installation
 
 **Python versions:**
 
-gis-utils requires **Python** 3.8 (or higher)
+gis-utils requires **Python** 3.9 (or higher)
 
 **Dependencies:**  
 numpy   
