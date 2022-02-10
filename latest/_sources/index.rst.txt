@@ -13,3 +13,4 @@ gis-utils Documentation
    usage
    release-history
    min_versions
+   troubleshooting
