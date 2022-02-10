@@ -64,17 +64,37 @@ def project(geom, projection1, projection2):
     projection2: string
         Proj4 string specifying destination projection
     """
+    transformer = pyproj.Transformer.from_crs(projection1, projection2, always_xy=True)
+    try:
+        reprojected = _project(transformer, geom)
+    except pyproj.ProjError as e:
+        # in the case of a network error,
+        # try using environmental variables for SSL certificate
+        # https://pyproj4.github.io/pyproj/stable/api/network.html
+        # this seems to only work within a session,
+        # and within the same scope as the transformer instance
+        pyproj.network.set_ca_bundle_path(False)
+        reprojected = _project(transformer, geom)
+    return reprojected
+    
+    
+def _project(transformer, geom):
+    """Performs the actual reprojection. Wrapped by
+    :func:`gisutils.projection.project` to handle potential
+    SSL errors.
+    
+    """
     # pyproj 2 style
     # https://pyproj4.github.io/pyproj/dev/gotchas.html
-    transformer = pyproj.Transformer.from_crs(projection1, projection2, always_xy=True)
+    #transformer = pyproj.Transformer.from_crs(projection1, projection2, always_xy=True)
 
     # check for x, y values instead of shapely objects
     if isinstance(geom, tuple):
         # tuple of scalar values
         if np.isscalar(geom[0]):
-            return transformer.transform(*geom)
+            return transformer.transform(*geom, errcheck=True)
         elif is_sequence(geom[0]):
-            return transformer.transform(*geom)
+            return transformer.transform(*geom, errcheck=True)
 
     # sequence of tuples or shapely objects
     if isinstance(geom, BaseMultipartGeometry):
@@ -90,9 +110,9 @@ def project(geom, projection1, projection2):
         a = np.array(geom)
         x = a[:, 0]
         y = a[:, 1]
-        return transformer.transform(x, y)
+        return transformer.transform(x, y, errcheck=True)
 
-    project = partial(transformer.transform)
+    project = partial(transformer.transform, errcheck=True)
 
     # do the transformation!
     if is_sequence(geom) and not isinstance(geom, BaseMultipartGeometry):
