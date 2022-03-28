@@ -11,6 +11,7 @@ gis-utils Documentation
 
    installation
    usage
+   Code Reference <api/index>
    release-history
    min_versions
    troubleshooting
