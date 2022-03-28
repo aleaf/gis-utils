@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 from pyproj.enums import WktVersion
-from gisutils.projection import get_authority_crs, project
+from gisutils.projection import get_authority_crs, project, get_shapefile_crs
 from gisutils.utils import is_sequence
 
 
@@ -49,6 +49,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -203,6 +204,7 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -380,29 +382,6 @@ def shp_properties(df):
     return properties
 
 
-def get_shapefile_crs(shapefile):
-    """Get the coordinate reference system for a shapefile.
 
-    Parameters
-    ----------
-    shapefile : str
-        Path to a shapefile
-
-    Returns
-    -------
-    crs : pyproj.CRS instance
-
-    """
-    if not isinstance(shapefile, str) and \
-            is_sequence(shapefile):
-        shapefile = shapefile[0]
-    shapefile = Path(shapefile)
-
-    prjfile = shapefile.with_suffix('.prj')
-    if prjfile.exists():
-        with open(prjfile) as src:
-            wkt = src.read()
-            crs = pyproj.crs.CRS.from_wkt(wkt)
-            return get_authority_crs(crs)
 
 

@@ -4,8 +4,8 @@ import pandas as pd
 import shapely.wkt
 import pyproj
 import pytest
-from gisutils.projection import project, get_authority_crs
-from gisutils.shapefile import (df2shp, shp2df, shp_properties, get_shapefile_crs,
+from gisutils.projection import project, get_authority_crs, get_shapefile_crs
+from gisutils.shapefile import (df2shp, shp2df, shp_properties,
                          rename_fields_to_10_characters)
 
 

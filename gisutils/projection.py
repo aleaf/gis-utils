@@ -12,7 +12,6 @@ try:
 except:
     rasterio = False
 import pyproj
-from osgeo import osr
 from gisutils.utils import is_sequence
 
 
@@ -25,31 +24,62 @@ def __getattr__(name):
     raise AttributeError('No module named ' + name)
 
 
-def get_proj_str(prj):
+def get_proj_str(prjfile):
     """Get the PROJ string from the well-known text in an ESRI projection file.
 
     Parameters
     ----------
-    prj : string (filepath)
+    prjfile : string (filepath)
         ESRI Shapefile or projection file
 
     Returns
     -------
     proj_str : string (http://trac.osgeo.org/proj/)
 
-    """
-    prjfile = Path(prj).with_suffix('.prj')
+    Notes
+    -----
+    PROJ strings can be lossy and are no longer recommended as a way
+    to store coordinate reference system (CRS) information. The pyproj :class:`~pyproj.crs.CRS`
+    class provides an improved way to represent CRS in memory; the gisutils
+    :func:`get_authority_crs` and :func:`get_shapefile_crs` functions return 
+    pyproj :class:`~pyproj.crs.CRS` instances and are therefore preferred 
+    over this function.
     
-    try:
-        with open(prjfile) as src:
-            prjtext = src.read()
-        srs = osr.SpatialReference()
-        srs.ImportFromESRI([prjtext])
-        proj_str = srs.ExportToProj4()
-        return proj_str
-    except:
-        pass
+    References
+    ----------
+    https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS
+    https://pyproj4.github.io/pyproj/dev/gotchas.html#what-are-the-best-formats-to-store-the-crs-information
+    
+    """
+    crs = get_shapefile_crs(prjfile)
+    return crs.to_proj4()
 
+
+def get_shapefile_crs(shapefile):
+    """Get the coordinate reference system for a shapefile.
+
+    Parameters
+    ----------
+    shapefile : str
+        Path to a shapefile
+
+    Returns
+    -------
+    crs : pyproj.CRS instance
+
+    """
+    if not isinstance(shapefile, str) and \
+            is_sequence(shapefile):
+        shapefile = shapefile[0]
+    shapefile = Path(shapefile)
+
+    prjfile = shapefile.with_suffix('.prj')
+    if prjfile.exists():
+        with open(prjfile) as src:
+            wkt = src.read()
+            crs = pyproj.crs.CRS.from_wkt(wkt)
+            return get_authority_crs(crs)
+        
 
 def project(geom, projection1, projection2):
     """Reproject shapely geometry object(s) or scalar
@@ -64,7 +94,8 @@ def project(geom, projection1, projection2):
     projection2: string
         Proj4 string specifying destination projection
     """
-    transformer = pyproj.Transformer.from_crs(projection1, projection2, always_xy=True)
+    transformer = pyproj.Transformer.from_crs(projection1, 
+                                              projection2, always_xy=True)
     try:
         reprojected = _project(transformer, geom)
     except pyproj.ProjError as e:
@@ -132,6 +163,7 @@ def get_authority_crs(crs):
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -142,17 +174,17 @@ def get_authority_crs(crs):
           - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
           - An object with a `to_wkt` method.
           - A :class:`pyproj.crs.CRS` class
-
+          
     Returns
     -------
     authority_crs : pyproj.crs.CRS instance
         CRS instance initiallized with the name
         and authority code (e.g. epsg: 5070) produced by
-        pyproj.crs.CRS.to_authority()
+        :meth:`pyproj.crs.CRS.to_authority`
 
     Notes
     -----
-    pyproj.crs.CRS.to_authority() will return None if a matching
+    :meth:`pyproj.crs.CRS.to_authority` will return None if a matching
     authority name and code can't be found. In this case,
     the input crs instance will be returned.
 
@@ -187,6 +219,7 @@ def project_raster(source_raster, dest_raster, dest_crs,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -197,6 +230,7 @@ def project_raster(source_raster, dest_raster, dest_crs,
           - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]
           - An object with a `to_wkt` method.
           - A :class:`pyproj.crs.CRS` class
+          
     resampling : int
         Type of resampling to use when reprojecting the raster
         (see rasterio source code: https://github.com/mapbox/rasterio/blob/master/rasterio/enums.py)
@@ -270,6 +304,7 @@ def get_rasterio_crs(crs):
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters

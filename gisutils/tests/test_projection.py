@@ -35,8 +35,6 @@ def test_get_proj_str(test_output_path):
     assert p1 == p2
 
 
-
-    
 @pytest.mark.parametrize('crs', (True, False))
 @pytest.mark.parametrize('input', [(554220.0, 391780.0, 3070, 3071),
                                    (177955.0, 939285.0, 'epsg:5070', 'epsg:4269'),

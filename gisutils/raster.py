@@ -23,8 +23,8 @@ try:
 except:
     gdal = False
 
-from gisutils.projection import project, get_authority_crs, project_raster
-from gisutils.shapefile import get_shapefile_crs, shp2df
+from gisutils.projection import project, get_authority_crs, project_raster, get_shapefile_crs
+from gisutils.shapefile import shp2df
 
 
 def get_transform(xul, yul, dx, dy=None, rotation=0.):
@@ -107,6 +107,7 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -293,6 +294,7 @@ def points_to_raster(points_shapefiles, nodata_value=-99,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -389,6 +391,7 @@ def write_raster(filename, array, xll=0., yll=0., xul=None, yul=None,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
@@ -632,6 +635,7 @@ def clip_raster(inraster, clip_features, outraster,
         passed to the pyproj.crs.from_user_input
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
+        
           - PROJ string
           - Dictionary of PROJ parameters
           - PROJ keyword arguments for parameters
