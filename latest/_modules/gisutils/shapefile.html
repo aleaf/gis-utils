@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gisutils.shapefile &mdash; gis-utils 0.3.2 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> gis-utils
+          </a>
+              <div class="version">
+                0.3.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../release-history.html">Release History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../min_versions.html">Minimum Version of Python and NumPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troublehsooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gis-utils</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      <li>gisutils.shapefile</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gisutils.shapefile</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for working with shapefiles.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">distutils.version</span> <span class="kn">import</span> <span class="n">LooseVersion</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">fiona</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">shape</span><span class="p">,</span> <span class="n">mapping</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">pyproj</span>
+<span class="kn">from</span> <span class="nn">pyproj.enums</span> <span class="kn">import</span> <span class="n">WktVersion</span>
+<span class="kn">from</span> <span class="nn">gisutils.projection</span> <span class="kn">import</span> <span class="n">get_authority_crs</span><span class="p">,</span> <span class="n">project</span><span class="p">,</span> <span class="n">get_shapefile_crs</span>
+<span class="kn">from</span> <span class="nn">gisutils.utils</span> <span class="kn">import</span> <span class="n">is_sequence</span>
+
+
+<div class="viewcode-block" id="df2shp"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.df2shp">[docs]</a><span class="k">def</span> <span class="nf">df2shp</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">shpname</span><span class="p">,</span> <span class="n">geo_column</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">retain_order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+           <span class="n">prj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write a DataFrame with a column of shapely geometries to a shapefile.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    dataframe : pandas.DataFrame</span>
+<span class="sd">    shpname : str, filepath</span>
+<span class="sd">        Output shapefile</span>
+<span class="sd">    geo_column : str</span>
+<span class="sd">        Name of column in dataframe with feature geometries (default &#39;geometry&#39;)</span>
+<span class="sd">    index : bool</span>
+<span class="sd">        If True, include the DataFrame index in the written shapefile</span>
+<span class="sd">    retain_order : bool</span>
+<span class="sd">        Retain column order in dataframe, using an OrderedDict. Shapefile will</span>
+<span class="sd">        take about twice as long to write, since OrderedDict output is not</span>
+<span class="sd">        supported by the pandas DataFrame object.</span>
+<span class="sd">    prj : str</span>
+<span class="sd">        Path to ESRI projection file describing the coordinate reference system of the feature geometries</span>
+<span class="sd">        in the &#39;geometry&#39; column. (specify one of prj, epsg, proj_str)</span>
+<span class="sd">    epsg : int</span>
+<span class="sd">        EPSG code describing the coordinate reference system of the feature geometries</span>
+<span class="sd">        in the &#39;geometry&#39; column.</span>
+<span class="sd">    proj_str : str</span>
+<span class="sd">        PROJ string describing the coordinate reference system of the feature geometries</span>
+<span class="sd">        in the &#39;geometry&#39; column.</span>
+<span class="sd">    crs : obj</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    writes a shapefile to shpname</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># first check if output path exists</span>
+    <span class="n">output_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">shpname</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">shpname</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">output_folder</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;Output folder doesn&#39;t exist:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">output_folder</span><span class="p">))</span>
+
+    <span class="c1"># check for empty dataframe</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataframe</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">IndexError</span><span class="p">(</span><span class="s2">&quot;DataFrame is empty!&quot;</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>  <span class="c1"># make a copy so the supplied dataframe isn&#39;t edited</span>
+
+    <span class="c1"># reassign geometry column if geo_column is special (e.g. something other than &quot;geometry&quot;)</span>
+    <span class="k">if</span> <span class="n">geo_column</span> <span class="o">!=</span> <span class="s1">&#39;geometry&#39;</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">geo_column</span><span class="p">]</span>
+        <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">geo_column</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># assign none for geometry, to write a dbf file from dataframe</span>
+    <span class="n">Type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;geometry&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="n">df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">Type</span> <span class="o">=</span> <span class="s1">&#39;None&#39;</span>
+        <span class="n">mapped</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="c1"># reset the index to integer index to enforce ordering</span>
+    <span class="c1"># retain index as attribute field if index=True</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop</span><span class="o">=</span><span class="ow">not</span> <span class="n">index</span><span class="p">)</span>
+
+    <span class="c1"># enforce 10 character limit</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">rename_fields_to_10_characters</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">shp_properties</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">properties</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+
+    <span class="c1"># set projection (or use a prj file, which must be copied after shp is written)</span>
+    <span class="c1"># alternatively, provide a crs in dictionary form as read using fiona</span>
+    <span class="c1"># from a shapefile like fiona.open(inshpfile).crs</span>
+    <span class="n">crs_wkt</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">epsg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;gisutils.df2shp: the epsg argument is deprecated; use crs instead&#39;</span><span class="p">,</span>
+                      <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">fiona.crs</span> <span class="kn">import</span> <span class="n">from_epsg</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="n">from_epsg</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">epsg</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">proj_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;gisutils.df2shp: the proj_str argument is deprecated; use crs instead&#39;</span><span class="p">,</span>
+                      <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="kn">from</span> <span class="nn">fiona.crs</span> <span class="kn">import</span> <span class="n">from_string</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="n">from_string</span><span class="p">(</span><span class="n">proj_str</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">proj_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
+        <span class="c1"># https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona</span>
+        <span class="k">if</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="n">fiona</span><span class="o">.</span><span class="n">__gdal_version__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">LooseVersion</span><span class="p">(</span><span class="s2">&quot;3.0.0&quot;</span><span class="p">):</span>
+            <span class="n">crs_wkt</span> <span class="o">=</span> <span class="n">proj_crs</span><span class="o">.</span><span class="n">to_wkt</span><span class="p">(</span><span class="n">WktVersion</span><span class="o">.</span><span class="n">WKT1_GDAL</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># GDAL 3+ can use WKT2</span>
+            <span class="n">crs_wkt</span> <span class="o">=</span> <span class="n">proj_crs</span><span class="o">.</span><span class="n">to_wkt</span><span class="p">()</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">if</span> <span class="n">Type</span> <span class="o">!=</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">Type</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">type</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="n">mapped</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapping</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">]</span>
+
+    <span class="n">schema</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">Type</span><span class="p">,</span> <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="n">properties</span><span class="p">}</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">retain_order</span><span class="p">:</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">orient</span><span class="o">=</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">props</span> <span class="o">=</span> <span class="p">[</span><span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span><span class="o">.</span><span class="n">iterrows</span><span class="p">()]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;writing </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shpname</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="c1">#with fiona.collection(shpname, &quot;w&quot;, driver=&quot;ESRI Shapefile&quot;, crs=crs, crs_wkt=crs_wkt, schema=schema) as output:</span>
+    <span class="k">with</span> <span class="n">fiona</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">shpname</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">driver</span><span class="o">=</span><span class="s2">&quot;ESRI Shapefile&quot;</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">crs</span><span class="p">,</span> <span class="n">crs_wkt</span><span class="o">=</span><span class="n">crs_wkt</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">({</span><span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="n">props</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                          <span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="n">mapped</span><span class="p">[</span><span class="n">i</span><span class="p">]})</span>
+    <span class="k">if</span> <span class="n">prj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;copying </span><span class="si">{}</span><span class="s1"> --&gt; </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prj</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.prj&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shpname</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">])))</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">prj</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">.prj&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shpname</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]))</span>
+        <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: could not find specified prj file. shp will not be projected.&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; Done&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="rename_fields_to_10_characters"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.rename_fields_to_10_characters">[docs]</a><span class="k">def</span> <span class="nf">rename_fields_to_10_characters</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">))</span>  <span class="c1"># convert columns to strings in case some are ints</span>
+    <span class="n">newfields</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="n">fields</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newfields</span><span class="p">:</span>
+            <span class="n">newfields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newfields</span><span class="p">:</span>
+                        <span class="n">newfields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                        <span class="k">break</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">{}{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">newfields</span><span class="p">:</span>
+                        <span class="n">newfields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">[:</span><span class="n">limit</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+                        <span class="k">break</span>
+    <span class="k">return</span> <span class="n">newfields</span></div>
+
+
+<div class="viewcode-block" id="shp2df"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp2df">[docs]</a><span class="k">def</span> <span class="nf">shp2df</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clipto</span><span class="o">=</span><span class="p">[],</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">false_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+           <span class="n">skip_empty_geom</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)</span>
+<span class="sd">     into pandas DataFrame.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    shplist : string or list</span>
+<span class="sd">        of shapefile/DBF name(s) or FileGDB</span>
+<span class="sd">    index : string</span>
+<span class="sd">        Column to use as index for dataframe</span>
+<span class="sd">    index_dtype : dtype</span>
+<span class="sd">        Enforces a datatype for the index column (for example, if the index field is supposed to be integer</span>
+<span class="sd">        but pandas reads it as strings, converts to integer)</span>
+<span class="sd">    clipto : list</span>
+<span class="sd">        limit what is brought in to items in index of clipto (requires index)</span>
+<span class="sd">    filter : tuple (xmin, ymin, xmax, ymax)</span>
+<span class="sd">        bounding box to filter which records are read from the shapefile.</span>
+<span class="sd">    true_values : list</span>
+<span class="sd">        same as argument for pandas read_csv</span>
+<span class="sd">    false_values : list</span>
+<span class="sd">        same as argument for pandas read_csv</span>
+<span class="sd">    layer : str</span>
+<span class="sd">        Layer name to read (if opening FileGDB)</span>
+<span class="sd">    dest_crs : obj</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+<span class="sd">    skip_empty_geom : True/False, default True</span>
+<span class="sd">        Drops shapefile entries with null geometries.</span>
+<span class="sd">        DBF files (which specify null geometries in their schema) will still be read.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    df : DataFrame</span>
+<span class="sd">        with attribute fields as columns; feature geometries are stored as</span>
+<span class="sd">    shapely geometry objects in the &#39;geometry&#39; column.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="n">shplist</span> <span class="o">=</span> <span class="p">[</span><span class="n">shplist</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">true_values</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">true_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">true_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">true_values</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">false_values</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">and</span> <span class="n">false_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">false_values</span> <span class="o">=</span> <span class="p">[</span><span class="n">false_values</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">clipto</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">index</span><span class="p">:</span>
+        <span class="n">clip</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">clip</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># destination crs for geometries read from shapefile(s)</span>
+    <span class="k">if</span> <span class="n">dest_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dest_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">dest_crs</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">shp</span> <span class="ow">in</span> <span class="n">shplist</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">reading </span><span class="si">{}</span><span class="s2">...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">shp</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">IOError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> doesn&#39;t exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">shp</span><span class="p">))</span>
+
+        <span class="c1"># crs of current shapefile</span>
+        <span class="n">shp_crs</span> <span class="o">=</span> <span class="n">get_shapefile_crs</span><span class="p">(</span><span class="n">shp</span><span class="p">)</span>
+        <span class="c1"># set the destination CRS if none was specified</span>
+        <span class="c1"># so that heterogenious shapefiles will be output to</span>
+        <span class="c1"># the same CRS</span>
+        <span class="k">if</span> <span class="n">dest_crs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shp_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dest_crs</span> <span class="o">=</span> <span class="n">shp_crs</span>
+
+        <span class="k">with</span> <span class="n">fiona</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">shp</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="n">layer</span><span class="p">)</span> <span class="k">as</span> <span class="n">shp_obj</span><span class="p">:</span>
+
+            <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># handle capitolization issues with index field name</span>
+                <span class="n">fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">shp_obj</span><span class="o">.</span><span class="n">schema</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fields</span> <span class="k">if</span> <span class="n">index</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">f</span><span class="o">.</span><span class="n">lower</span><span class="p">()][</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="n">attributes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># for reading in shapefiles</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">shp_obj</span><span class="o">.</span><span class="n">meta</span>
+            <span class="k">if</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;schema&#39;</span><span class="p">][</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;None&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;filtering on bounding box </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">, </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">*</span><span class="nb">filter</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">clip</span><span class="p">:</span>  <span class="c1"># limit what is brought in to items in index of clipto</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">shp_obj</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="nb">filter</span><span class="p">):</span>
+                        <span class="n">props</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">in</span> <span class="n">clipto</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">props</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="n">attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">shp_obj</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">bbox</span><span class="o">=</span><span class="nb">filter</span><span class="p">):</span>
+                        <span class="n">props</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span>
+                        <span class="n">props</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                        <span class="n">attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--&gt; building dataframe... (may take a while for large shapefiles)&#39;</span><span class="p">)</span>
+                <span class="n">shp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
+                <span class="c1"># reorder fields in the DataFrame to match the input shapefile</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">shp_df</span> <span class="o">=</span> <span class="n">shp_df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+
+                <span class="c1"># handle null geometries</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shp_df</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Empty dataframe! No clip_features were read.&#39;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">filter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Check filter </span><span class="si">{}</span><span class="s1"> for consistency </span><span class="se">\</span>
+<span class="s1">    with shapefile coordinate system&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">filter</span><span class="p">))</span>
+                <span class="c1"># shp_df will only have a geometry column if it isn&#39;t empty</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">geoms</span> <span class="o">=</span> <span class="n">shp_df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">geoms</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">shp_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="n">skip_empty_geom</span><span class="p">:</span>
+                        <span class="n">null_geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span>
+                        <span class="n">shp_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">null_geoms</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                        <span class="n">shp_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">shp_df</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">shp_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">shape</span><span class="p">(</span><span class="n">g</span><span class="p">)</span> <span class="k">if</span> <span class="n">g</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+                                              <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">geoms</span><span class="p">]</span>
+
+            <span class="c1"># for reading in DBF files (just like shps, but without geometry)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">clip</span><span class="p">:</span>  <span class="c1"># limit what is brought in to items in index of clipto</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">shp_obj</span><span class="p">:</span>
+                        <span class="n">props</span> <span class="o">=</span> <span class="n">line</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">props</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="ow">in</span> <span class="n">clipto</span><span class="p">:</span>
+                            <span class="k">continue</span>
+                        <span class="n">attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">props</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">shp_obj</span><span class="p">:</span>
+                        <span class="n">attributes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--&gt; building dataframe... (may take a while for large shapefiles)&#39;</span><span class="p">)</span>
+                <span class="n">shp_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
+                <span class="c1"># reorder fields in the DataFrame to match the input shapefile</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">shp_df</span> <span class="o">=</span> <span class="n">shp_df</span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">shp_df</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># set the dataframe index from the index column</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">index_dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">shp_df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">shp_df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">index_dtype</span><span class="p">)</span>
+            <span class="n">shp_df</span><span class="o">.</span><span class="n">index</span> <span class="o">=</span> <span class="n">shp_df</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+
+        <span class="c1"># reproject geometries to dest_crs if needed</span>
+        <span class="k">if</span> <span class="n">shp_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">dest_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">shp_crs</span> <span class="o">!=</span> <span class="n">dest_crs</span><span class="p">:</span>
+            <span class="n">shp_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project</span><span class="p">(</span><span class="n">shp_df</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">],</span> <span class="n">shp_crs</span><span class="p">,</span> <span class="n">dest_crs</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shp_df</span><span class="p">)</span>
+
+        <span class="c1"># convert any t/f columns to numpy boolean data</span>
+        <span class="k">if</span> <span class="n">true_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">false_values</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">replace_boolean</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">true_values</span><span class="p">:</span>
+                <span class="n">replace_boolean</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">false_values</span><span class="p">:</span>
+                <span class="n">replace_boolean</span><span class="p">[</span><span class="n">f</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># only remap columns that have values to be replaced</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s1">&#39;geometry&#39;</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">replace_boolean</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">])))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">replace_boolean</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">df</span></div>
+
+
+<div class="viewcode-block" id="shp_properties"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp_properties">[docs]</a><span class="k">def</span> <span class="nf">shp_properties</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+
+    <span class="n">newdtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;datetime64[ns]&#39;</span><span class="p">:</span> <span class="s1">&#39;str&#39;</span><span class="p">}</span>
+
+    <span class="c1"># fiona/OGR doesn&#39;t like numpy ints</span>
+    <span class="c1"># shapefile doesn&#39;t support 64 bit ints,</span>
+    <span class="c1"># but apparently leaving the ints alone is more reliable</span>
+    <span class="c1"># than intentionally downcasting them to 32 bit</span>
+    <span class="c1"># pandas is smart enough to figure it out on .to_dict()?</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s1">&#39;geometry&#39;</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">newdtypes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                               <span class="n">df</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="k">if</span> <span class="s1">&#39;int&#39;</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+
+    <span class="c1"># strip dtypes to just &#39;float&#39;, &#39;int&#39; or &#39;str&#39;</span>
+    <span class="k">def</span> <span class="nf">stripandreplace</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()])</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;object&#39;</span><span class="p">,</span> <span class="s1">&#39;str&#39;</span><span class="p">)</span>
+    <span class="n">dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="n">stripandreplace</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+              <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="s1">&#39;geometry&#39;</span>
+              <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
+    <span class="n">properties</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">dtypes</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">properties</span></div>
+
+
+
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Andrew Leaf.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

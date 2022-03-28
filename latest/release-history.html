@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Release History &mdash; gis-utils 0.3.1.post1+g460a925 documentation</title>
+  <title>Release History &mdash; gis-utils 0.3.2 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
@@ -23,7 +23,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Minimum Version of Python and NumPy" href="min_versions.html" />
-    <link rel="prev" title="Usage" href="usage.html" /> 
+    <link rel="prev" title="gisutils.utils module" href="api/gisutils.utils.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -34,7 +34,7 @@
             <a href="index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.1.post1+g460a925
+                0.3.2
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -47,7 +47,10 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">Code Reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-2-2022-03-28">Version 0.3.2 (2022-03-28)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-1-2022-02-08">Version 0.3.1 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3-0-2022-02-08">Version 0.3.0 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-2-6-2021-01-04">Version 0.2.6 (2021-01-04)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-2-5-2020-10-20">Version 0.2.5 (2020-10-20)</a></li>
@@ -92,6 +95,19 @@
              
   <section id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
+<section id="version-0-3-2-2022-03-28">
+<h2>Version 0.3.2 (2022-03-28)<a class="headerlink" href="#version-0-3-2-2022-03-28" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>bug fix: replace use of osr with pyproj.crs.CRS to resolve windows DLL error</p></li>
+<li><p>bug fix: point pyproj to local environmental variables for SSL cert if pyproj network access fails</p></li>
+</ul>
+</section>
+<section id="version-0-3-1-2022-02-08">
+<h2>Version 0.3.1 (2022-02-08)<a class="headerlink" href="#version-0-3-1-2022-02-08" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>this release is functionally the same as 0.3.0; was incremented due to issues with automated release workflow.</p></li>
+</ul>
+</section>
 <section id="version-0-3-0-2022-02-08">
 <h2>Version 0.3.0 (2022-02-08)<a class="headerlink" href="#version-0-3-0-2022-02-08" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -117,7 +133,7 @@
 <h2>Version 0.2.4 (2020-10-05)<a class="headerlink" href="#version-0-2-4-2020-10-05" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>support for using pathlib Paths instead of strings</p></li>
-<li><p><code class="xref py py-func docutils literal notranslate"><span class="pre">points_to_raster()</span></code> method to interpolate point data to a regular grid and write to a GeoTIFF.</p></li>
+<li><p><a class="reference internal" href="api/gisutils.raster.html#gisutils.raster.points_to_raster" title="gisutils.raster.points_to_raster"><code class="xref py py-func docutils literal notranslate"><span class="pre">points_to_raster()</span></code></a> method to interpolate point data to a regular grid and write to a GeoTIFF.</p></li>
 <li><p>fix raster.get_values_at_points to skip automatic reprojection if the raster is unprojected</p></li>
 </ul>
 </section>
@@ -187,7 +203,7 @@ with general crs argument using <cite>pyproj</cite></p></li>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="usage.html" class="btn btn-neutral float-left" title="Usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api/gisutils.utils.html" class="btn btn-neutral float-left" title="gisutils.utils module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="min_versions.html" class="btn btn-neutral float-right" title="Minimum Version of Python and NumPy" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

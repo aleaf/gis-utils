@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gisutils.shapefile module &mdash; gis-utils 0.3.2 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gisutils.raster module" href="gisutils.raster.html" />
+    <link rel="prev" title="gisutils.projection module" href="gisutils.projection.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> gis-utils
+          </a>
+              <div class="version">
+                0.3.2
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gisutils.projection.html">gisutils.projection module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gisutils.shapefile module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gisutils.raster.html">gisutils.raster module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gisutils.utils.html">gisutils.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../release-history.html">Release History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../min_versions.html">Minimum Version of Python and NumPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troublehsooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gis-utils</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="index.html">Code Reference</a> &raquo;</li>
+      <li>gisutils.shapefile module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/gisutils.shapefile.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-gisutils.shapefile">
+<span id="gisutils-shapefile-module"></span><h1>gisutils.shapefile module<a class="headerlink" href="#module-gisutils.shapefile" title="Permalink to this headline">¶</a></h1>
+<p>Functions for working with shapefiles.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.shapefile.df2shp">
+<span class="sig-prename descclassname"><span class="pre">gisutils.shapefile.</span></span><span class="sig-name descname"><span class="pre">df2shp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataframe</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shpname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geo_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'geometry'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">retain_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prj</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epsg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/shapefile.html#df2shp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.shapefile.df2shp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a DataFrame with a column of shapely geometries to a shapefile.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>dataframe</strong><span class="classifier">pandas.DataFrame</span></dt><dd></dd>
+<dt><strong>shpname</strong><span class="classifier">str, filepath</span></dt><dd><p>Output shapefile</p>
+</dd>
+<dt><strong>geo_column</strong><span class="classifier">str</span></dt><dd><p>Name of column in dataframe with feature geometries (default ‘geometry’)</p>
+</dd>
+<dt><strong>index</strong><span class="classifier">bool</span></dt><dd><p>If True, include the DataFrame index in the written shapefile</p>
+</dd>
+<dt><strong>retain_order</strong><span class="classifier">bool</span></dt><dd><p>Retain column order in dataframe, using an OrderedDict. Shapefile will
+take about twice as long to write, since OrderedDict output is not
+supported by the pandas DataFrame object.</p>
+</dd>
+<dt><strong>prj</strong><span class="classifier">str</span></dt><dd><p>Path to ESRI projection file describing the coordinate reference system of the feature geometries
+in the ‘geometry’ column. (specify one of prj, epsg, proj_str)</p>
+</dd>
+<dt><strong>epsg</strong><span class="classifier">int</span></dt><dd><p>EPSG code describing the coordinate reference system of the feature geometries
+in the ‘geometry’ column.</p>
+</dd>
+<dt><strong>proj_str</strong><span class="classifier">str</span></dt><dd><p>PROJ string describing the coordinate reference system of the feature geometries
+in the ‘geometry’ column.</p>
+</dd>
+<dt><strong>crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>writes a shapefile to shpname</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.shapefile.rename_fields_to_10_characters">
+<span class="sig-prename descclassname"><span class="pre">gisutils.shapefile.</span></span><span class="sig-name descname"><span class="pre">rename_fields_to_10_characters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/shapefile.html#rename_fields_to_10_characters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.shapefile.rename_fields_to_10_characters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.shapefile.shp2df">
+<span class="sig-prename descclassname"><span class="pre">gisutils.shapefile.</span></span><span class="sig-name descname"><span class="pre">shp2df</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shplist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clipto</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">true_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">false_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_empty_geom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/shapefile.html#shp2df"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.shapefile.shp2df" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)</dt><dd><p>into pandas DataFrame.</p>
+</dd>
+</dl>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>shplist</strong><span class="classifier">string or list</span></dt><dd><p>of shapefile/DBF name(s) or FileGDB</p>
+</dd>
+<dt><strong>index</strong><span class="classifier">string</span></dt><dd><p>Column to use as index for dataframe</p>
+</dd>
+<dt><strong>index_dtype</strong><span class="classifier">dtype</span></dt><dd><p>Enforces a datatype for the index column (for example, if the index field is supposed to be integer
+but pandas reads it as strings, converts to integer)</p>
+</dd>
+<dt><strong>clipto</strong><span class="classifier">list</span></dt><dd><p>limit what is brought in to items in index of clipto (requires index)</p>
+</dd>
+<dt><strong>filter</strong><span class="classifier">tuple (xmin, ymin, xmax, ymax)</span></dt><dd><p>bounding box to filter which records are read from the shapefile.</p>
+</dd>
+<dt><strong>true_values</strong><span class="classifier">list</span></dt><dd><p>same as argument for pandas read_csv</p>
+</dd>
+<dt><strong>false_values</strong><span class="classifier">list</span></dt><dd><p>same as argument for pandas read_csv</p>
+</dd>
+<dt><strong>layer</strong><span class="classifier">str</span></dt><dd><p>Layer name to read (if opening FileGDB)</p>
+</dd>
+<dt><strong>dest_crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><strong>skip_empty_geom</strong><span class="classifier">True/False, default True</span></dt><dd><p>Drops shapefile entries with null geometries.
+DBF files (which specify null geometries in their schema) will still be read.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>df</strong><span class="classifier">DataFrame</span></dt><dd><p>with attribute fields as columns; feature geometries are stored as</p>
+</dd>
+<dt>shapely geometry objects in the ‘geometry’ column.</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.shapefile.shp_properties">
+<span class="sig-prename descclassname"><span class="pre">gisutils.shapefile.</span></span><span class="sig-name descname"><span class="pre">shp_properties</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/shapefile.html#shp_properties"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.shapefile.shp_properties" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gisutils.projection.html" class="btn btn-neutral float-left" title="gisutils.projection module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gisutils.raster.html" class="btn btn-neutral float-right" title="gisutils.raster module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Andrew Leaf.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

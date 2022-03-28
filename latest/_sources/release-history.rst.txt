@@ -2,6 +2,15 @@
 Release History
 ===============
 
+Version 0.3.2 (2022-03-28)
+--------------------------
+* bug fix: replace use of osr with pyproj.crs.CRS to resolve windows DLL error
+* bug fix: point pyproj to local environmental variables for SSL cert if pyproj network access fails
+
+Version 0.3.1 (2022-02-08)
+--------------------------
+* this release is functionally the same as 0.3.0; was incremented due to issues with automated release workflow.
+
 Version 0.3.0 (2022-02-08)
 --------------------------
 * drop support for python 3.8; add support for 3.10
