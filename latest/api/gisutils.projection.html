@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.projection module &mdash; gis-utils 0.3.2 documentation</title>
+  <title>gisutils.projection module &mdash; gis-utils 0.3.2.post2+g7f33095 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
@@ -34,7 +35,7 @@
             <a href="../index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.2
+                0.3.2.post2+g7f33095
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -88,7 +89,7 @@
            <div itemprop="articleBody">
              
   <section id="module-gisutils.projection">
-<span id="gisutils-projection-module"></span><h1>gisutils.projection module<a class="headerlink" href="#module-gisutils.projection" title="Permalink to this headline">¶</a></h1>
+<span id="gisutils-projection-module"></span><h1>gisutils.projection module<a class="headerlink" href="#module-gisutils.projection" title="Permalink to this heading">¶</a></h1>
 <p>Functions for working with coordinate reference systems and projections.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.get_authority_crs">
@@ -114,7 +115,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -124,13 +125,13 @@ Can be any of:</p>
 <dd class="field-even"><dl class="simple">
 <dt><strong>authority_crs</strong><span class="classifier">pyproj.crs.CRS instance</span></dt><dd><p>CRS instance initiallized with the name
 and authority code (e.g. epsg: 5070) produced by
-<a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.3.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a></p>
+<a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.3.1)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a></p>
 </dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p><a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.3.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a> will return None if a matching
+<p><a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.3.1)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a> will return None if a matching
 authority name and code can’t be found. In this case,
 the input crs instance will be returned.</p>
 <p class="rubric">References</p>
@@ -156,10 +157,10 @@ the input crs instance will be returned.</p>
 </dl>
 <p class="rubric">Notes</p>
 <p>PROJ strings can be lossy and are no longer recommended as a way
-to store coordinate reference system (CRS) information. The pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a>
+to store coordinate reference system (CRS) information. The pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a>
 class provides an improved way to represent CRS in memory; the gisutils
 <a class="reference internal" href="#gisutils.projection.get_authority_crs" title="gisutils.projection.get_authority_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_authority_crs()</span></code></a> and <a class="reference internal" href="#gisutils.projection.get_shapefile_crs" title="gisutils.projection.get_shapefile_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_shapefile_crs()</span></code></a> functions return 
-pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> instances and are therefore preferred 
+pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> instances and are therefore preferred 
 over this function.</p>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS">https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS</a>
@@ -189,7 +190,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -269,7 +270,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>

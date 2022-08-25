@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.raster module &mdash; gis-utils 0.3.2 documentation</title>
+  <title>gisutils.raster module &mdash; gis-utils 0.3.2.post2+g7f33095 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
@@ -16,6 +16,7 @@
         <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
@@ -34,7 +35,7 @@
             <a href="../index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.2
+                0.3.2.post2+g7f33095
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -88,7 +89,7 @@
            <div itemprop="articleBody">
              
   <section id="module-gisutils.raster">
-<span id="gisutils-raster-module"></span><h1>gisutils.raster module<a class="headerlink" href="#module-gisutils.raster" title="Permalink to this headline">¶</a></h1>
+<span id="gisutils-raster-module"></span><h1>gisutils.raster module<a class="headerlink" href="#module-gisutils.raster" title="Permalink to this heading">¶</a></h1>
 <p>Functions for working with rasters.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.raster.clip_raster">
@@ -123,7 +124,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -265,7 +266,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -306,7 +307,7 @@ By default, 1e9.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.raster.points_to_raster">
-<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">points_to_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_shapefiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'values'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'surface.tif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#points_to_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.points_to_raster" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">points_to_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_shapefiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'values'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'surface.tif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#points_to_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.points_to_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Interpolate point data to a regular grid using scipy.interpolate.griddata;
 write results to a GeoTiff.</p>
 <dl class="field-list">
@@ -337,7 +338,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -353,7 +354,7 @@ Can be any of:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.raster.write_arc_ascii">
-<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_arc_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">9999</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_arc_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_arc_ascii" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_arc_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_arc_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_arc_ascii" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write numpy array to Arc Ascii grid.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -377,7 +378,7 @@ Can be any of:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.raster.write_raster">
-<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_raster" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_raster" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write a numpy array to Arc Ascii grid or shapefile with the model
 reference.</p>
 <dl class="field-list">
@@ -424,7 +425,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
