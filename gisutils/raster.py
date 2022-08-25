@@ -750,9 +750,15 @@ def _clip_raster(inraster, features, outraster, clip_kwargs, **kwargs):
                          "width": out_image.shape[2],
                          "transform": out_transform})
         out_meta.update(kwargs)
+        nodata_values = out_image == out_meta['nodata']
+        if np.any(nodata_values):
+            out_image = np.ma.masked_array(out_image,
+                                           mask=nodata_values)
 
         with rasterio.open(outraster, "w", **out_meta) as dest:
             dest.write(out_image)
+            if isinstance(out_image, np.ma.masked_array):
+                dest.write_mask(~out_image.mask.transpose(1, 2, 0))
             print('wrote {}'.format(outraster))
 
 

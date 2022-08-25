@@ -45,8 +45,8 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
         PROJ string describing the coordinate reference system of the feature geometries
         in the 'geometry' column.
     crs : obj
-        A Python int, dict, str, or pyproj.crs.CRS instance
-        passed to the pyproj.crs.from_user_input
+        A Python int, dict, str, or :class:`pyproj.crs.CRS` instance
+        passed to the :meth:`pyproj.crs.CRS.from_user_input`
         See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.
         Can be any of:
         
