@@ -2,6 +2,11 @@
 Release History
 ===============
 
+Version 0.3.3 (2022-10-27)
+--------------------------
+* bug fix: stop using fiona-style CRS mappings for deprecated epsg and proj_str CRS input to df2shp (these are invalid inputs to the crs arg to fiona.open in newer versions)
+
+
 Version 0.3.2 (2022-03-28)
 --------------------------
 * bug fix: replace use of osr with pyproj.crs.CRS to resolve windows DLL error
