@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.raster module &mdash; gis-utils 0.3.2.post2+g7f33095 documentation</title>
+  <title>gisutils.raster module &mdash; gis-utils 0.3.2.post3+g692124c documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
@@ -18,6 +18,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -35,7 +36,7 @@
             <a href="../index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.2.post2+g7f33095
+                0.3.2.post3+g692124c
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -52,7 +53,20 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#modules">Modules</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="gisutils.projection.html">gisutils.projection module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="gisutils.shapefile.html">gisutils.shapefile module</a></li>
-<li class="toctree-l3 current"><a class="current reference internal" href="#">gisutils.raster module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gisutils.raster module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.clip_raster"><code class="docutils literal notranslate"><span class="pre">clip_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_feature_geojson"><code class="docutils literal notranslate"><span class="pre">get_feature_geojson()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_geojson_collection_bounds"><code class="docutils literal notranslate"><span class="pre">get_geojson_collection_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_raster_crs"><code class="docutils literal notranslate"><span class="pre">get_raster_crs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_transform"><code class="docutils literal notranslate"><span class="pre">get_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_values_at_points"><code class="docutils literal notranslate"><span class="pre">get_values_at_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.points_to_raster"><code class="docutils literal notranslate"><span class="pre">points_to_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.read_arc_ascii"><code class="docutils literal notranslate"><span class="pre">read_arc_ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.write_arc_ascii"><code class="docutils literal notranslate"><span class="pre">write_arc_ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.write_raster"><code class="docutils literal notranslate"><span class="pre">write_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.zonal_stats"><code class="docutils literal notranslate"><span class="pre">zonal_stats()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l3"><a class="reference internal" href="gisutils.utils.html">gisutils.utils module</a></li>
 </ul>
 </li>
@@ -124,7 +138,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -266,7 +280,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -338,7 +352,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
@@ -425,7 +439,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.3.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>

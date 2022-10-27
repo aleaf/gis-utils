@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Code Reference &mdash; gis-utils 0.3.2.post2+g7f33095 documentation</title>
+  <title>Code Reference &mdash; gis-utils 0.3.2.post3+g692124c documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
@@ -18,6 +18,7 @@
         <script src="../_static/underscore.js"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
     <script src="../_static/js/theme.js"></script>
@@ -35,7 +36,7 @@
             <a href="../index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.2.post2+g7f33095
+                0.3.2.post3+g692124c
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -93,10 +94,40 @@
 <h2>Modules<a class="headerlink" href="#modules" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="gisutils.projection.html">gisutils.projection module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gisutils.shapefile.html">gisutils.shapefile module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gisutils.raster.html">gisutils.raster module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="gisutils.utils.html">gisutils.utils module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gisutils.projection.html">gisutils.projection module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.get_authority_crs"><code class="docutils literal notranslate"><span class="pre">get_authority_crs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.get_proj_str"><code class="docutils literal notranslate"><span class="pre">get_proj_str()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.get_rasterio_crs"><code class="docutils literal notranslate"><span class="pre">get_rasterio_crs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.get_shapefile_crs"><code class="docutils literal notranslate"><span class="pre">get_shapefile_crs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.project"><code class="docutils literal notranslate"><span class="pre">project()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.projection.html#gisutils.projection.project_raster"><code class="docutils literal notranslate"><span class="pre">project_raster()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gisutils.shapefile.html">gisutils.shapefile module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.shapefile.html#gisutils.shapefile.df2shp"><code class="docutils literal notranslate"><span class="pre">df2shp()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.shapefile.html#gisutils.shapefile.rename_fields_to_10_characters"><code class="docutils literal notranslate"><span class="pre">rename_fields_to_10_characters()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.shapefile.html#gisutils.shapefile.shp2df"><code class="docutils literal notranslate"><span class="pre">shp2df()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.shapefile.html#gisutils.shapefile.shp_properties"><code class="docutils literal notranslate"><span class="pre">shp_properties()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gisutils.raster.html">gisutils.raster module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.clip_raster"><code class="docutils literal notranslate"><span class="pre">clip_raster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.get_feature_geojson"><code class="docutils literal notranslate"><span class="pre">get_feature_geojson()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.get_geojson_collection_bounds"><code class="docutils literal notranslate"><span class="pre">get_geojson_collection_bounds()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.get_raster_crs"><code class="docutils literal notranslate"><span class="pre">get_raster_crs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.get_transform"><code class="docutils literal notranslate"><span class="pre">get_transform()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.get_values_at_points"><code class="docutils literal notranslate"><span class="pre">get_values_at_points()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.points_to_raster"><code class="docutils literal notranslate"><span class="pre">points_to_raster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.read_arc_ascii"><code class="docutils literal notranslate"><span class="pre">read_arc_ascii()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.write_arc_ascii"><code class="docutils literal notranslate"><span class="pre">write_arc_ascii()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.write_raster"><code class="docutils literal notranslate"><span class="pre">write_raster()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.raster.html#gisutils.raster.zonal_stats"><code class="docutils literal notranslate"><span class="pre">zonal_stats()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gisutils.utils.html">gisutils.utils module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gisutils.utils.html#gisutils.utils.is_sequence"><code class="docutils literal notranslate"><span class="pre">is_sequence()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
