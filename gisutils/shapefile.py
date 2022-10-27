@@ -106,14 +106,12 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     if epsg is not None:
         warnings.warn('gisutils.df2shp: the epsg argument is deprecated; use crs instead',
                       DeprecationWarning)
-        from fiona.crs import from_epsg
-        crs = from_epsg(int(epsg))
+        crs = get_authority_crs(int(epsg))
     elif proj_str is not None:
         warnings.warn('gisutils.df2shp: the proj_str argument is deprecated; use crs instead',
                       DeprecationWarning)
-        from fiona.crs import from_string
-        crs = from_string(proj_str)
-    elif crs is not None:
+        crs = get_authority_crs(proj_str)
+    if crs is not None:
         proj_crs = get_authority_crs(crs)
         # https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona
         if LooseVersion(fiona.__gdal_version__) < LooseVersion("3.0.0"):
