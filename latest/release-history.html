@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Release History &mdash; gis-utils 0.3.2.post3+g692124c documentation</title>
+  <title>Release History &mdash; gis-utils 0.3.3 documentation</title>
       <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
@@ -36,7 +36,7 @@
             <a href="index.html" class="icon icon-home"> gis-utils
           </a>
               <div class="version">
-                0.3.2.post3+g692124c
+                0.3.3
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -51,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">Code Reference</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Release History</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#version-0-3-3-2022-10-27">Version 0.3.3 (2022-10-27)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3-2-2022-03-28">Version 0.3.2 (2022-03-28)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3-1-2022-02-08">Version 0.3.1 (2022-02-08)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#version-0-3-0-2022-02-08">Version 0.3.0 (2022-02-08)</a></li>
@@ -97,6 +98,12 @@
              
   <section id="release-history">
 <h1>Release History<a class="headerlink" href="#release-history" title="Permalink to this heading">¶</a></h1>
+<section id="version-0-3-3-2022-10-27">
+<h2>Version 0.3.3 (2022-10-27)<a class="headerlink" href="#version-0-3-3-2022-10-27" title="Permalink to this heading">¶</a></h2>
+<ul class="simple">
+<li><p>bug fix: stop using fiona-style CRS mappings for deprecated epsg and proj_str CRS input to df2shp (these are invalid inputs to the crs arg to fiona.open in newer versions)</p></li>
+</ul>
+</section>
 <section id="version-0-3-2-2022-03-28">
 <h2>Version 0.3.2 (2022-03-28)<a class="headerlink" href="#version-0-3-2-2022-03-28" title="Permalink to this heading">¶</a></h2>
 <ul class="simple">
