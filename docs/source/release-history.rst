@@ -2,10 +2,13 @@
 Release History
 ===============
 
+Version 0.3.4 (2023-02-03)
+--------------------------
+* bug fix (shp2df): fiona-related issue with checking for ``None`` type in a list containing geometry objects
+
 Version 0.3.3 (2022-10-27)
 --------------------------
 * bug fix: stop using fiona-style CRS mappings for deprecated epsg and proj_str CRS input to df2shp (these are invalid inputs to the crs arg to fiona.open in newer versions)
-
 
 Version 0.3.2 (2022-03-28)
 --------------------------
