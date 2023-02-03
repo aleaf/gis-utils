@@ -68,7 +68,7 @@ def test_project_point(input, crs):
     point_2 = project(Point(point_1), proj_str_1, proj_str_2)
     point_3 = project(Point(point_2), proj_str_2, proj_str_1)
     assert isinstance(point_2, Point)
-    assert np.allclose(point_1, point_3)
+    assert np.allclose(point_1, (point_3.x, point_3.y))
 
     # list of Points
     point_2 = project([Point(point_1),
