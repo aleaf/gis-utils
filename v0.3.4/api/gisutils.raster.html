@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gisutils.raster module &mdash; gis-utils 0.3.4 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gisutils.utils module" href="gisutils.utils.html" />
+    <link rel="prev" title="gisutils.shapefile module" href="gisutils.shapefile.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> gis-utils
+          </a>
+              <div class="version">
+                0.3.4
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="index.html#modules">Modules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gisutils.projection.html">gisutils.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gisutils.shapefile.html">gisutils.shapefile module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gisutils.raster module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.clip_raster"><code class="docutils literal notranslate"><span class="pre">clip_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_feature_geojson"><code class="docutils literal notranslate"><span class="pre">get_feature_geojson()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_geojson_collection_bounds"><code class="docutils literal notranslate"><span class="pre">get_geojson_collection_bounds()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_raster_crs"><code class="docutils literal notranslate"><span class="pre">get_raster_crs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_transform"><code class="docutils literal notranslate"><span class="pre">get_transform()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.get_values_at_points"><code class="docutils literal notranslate"><span class="pre">get_values_at_points()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.points_to_raster"><code class="docutils literal notranslate"><span class="pre">points_to_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.read_arc_ascii"><code class="docutils literal notranslate"><span class="pre">read_arc_ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.write_arc_ascii"><code class="docutils literal notranslate"><span class="pre">write_arc_ascii()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.write_raster"><code class="docutils literal notranslate"><span class="pre">write_raster()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gisutils.raster.zonal_stats"><code class="docutils literal notranslate"><span class="pre">zonal_stats()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gisutils.utils.html">gisutils.utils module</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../release-history.html">Release History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../min_versions.html">Minimum Version of Python and NumPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../troubleshooting.html">Troublehsooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gis-utils</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Code Reference</a></li>
+      <li class="breadcrumb-item active">gisutils.raster module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/gisutils.raster.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-gisutils.raster">
+<span id="gisutils-raster-module"></span><h1>gisutils.raster module<a class="headerlink" href="#module-gisutils.raster" title="Permalink to this heading">¶</a></h1>
+<p>Functions for working with rasters.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.clip_raster">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">clip_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inraster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outraster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_features_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">project_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#clip_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.clip_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clip raster to feature extent(s), write the output
+to a new raster file. If the feature extent(s) are in
+a different coordinate reference system, the raster will first
+be reprojected to that CRS and then clipped. The output raster
+will be in the CRS of the clip features.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>inraster</strong><span class="classifier">str</span></dt><dd><p>Path to a raster file readable by rasterio.open</p>
+</dd>
+<dt><strong>clip_features</strong><span class="classifier">str or list-like</span></dt><dd><p>Shapefile or sequence of features. Features can be in
+any format accepted by gisutils.raster.get_feature_geojson()</p>
+</dd>
+<dt><strong>outraster</strong><span class="classifier">str</span></dt><dd><p>Filename for output raster.</p>
+</dd>
+<dt><strong>clip_features_crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><strong>clip_kwargs: dict</strong></dt><dd><p>Keyword arguments to rasterio.mask</p>
+</dd>
+<dt><strong>project_kwargs</strong><span class="classifier">dict</span></dt><dd><p>Key word arguments to gisutils.projection.project_raster()
+These are only used if the clip features are
+in a different coordinate system, in which case
+the raster will be reprojected into that coordinate
+system.</p>
+</dd>
+<dt><strong>kwargs</strong><span class="classifier">keyword arguments</span></dt><dd><p>Keyword arguments to rasterio.open for writing the output raster.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.get_feature_geojson">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">get_feature_geojson</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#get_feature_geojson"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.get_feature_geojson" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert input clip_features to list of clip_features in the
+geojson format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>features</strong><span class="classifier">str (shapefile path) or list of clip_features</span></dt><dd><p>If clip_features is a list, the clip_features can be in shapely polygon
+or wkt format (e.g. input to shapely.geometry.shape())</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>geoms</strong><span class="classifier">list of geojson clip_features</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.get_geojson_collection_bounds">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">get_geojson_collection_bounds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geojsoncollection</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#get_geojson_collection_bounds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.get_geojson_collection_bounds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the bounds for a collection of geojson clip_features.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>geojsoncollection</strong><span class="classifier">sequence</span></dt><dd><p>Sequence of geojson clip_features</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>xmin, xmax, ymin, ymax</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.get_raster_crs">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">get_raster_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#get_raster_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.get_raster_crs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the coordinate reference system for a shapefile.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>raster</strong><span class="classifier">str (filepath)</span></dt><dd><p>Path to a raster</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>crs</strong><span class="classifier">pyproj.CRS instance</span></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.get_transform">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">get_transform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xul</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yul</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#get_transform"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.get_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns an affine.Affine instance that can be
+used to locate raster grids in space. See
+<a class="reference external" href="https://www.perrygeo.com/python-affine-transforms.html">https://www.perrygeo.com/python-affine-transforms.html</a>
+<a class="reference external" href="https://rasterio.readthedocs.io/en/stable/topics/migrating-to-v1.html">https://rasterio.readthedocs.io/en/stable/topics/migrating-to-v1.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>xul</strong><span class="classifier">float</span></dt><dd><p>x-coorindate of upper left corner of raster grid</p>
+</dd>
+<dt><strong>yul</strong><span class="classifier">float</span></dt><dd><p>y-coorindate of upper left corner of raster grid</p>
+</dd>
+<dt><strong>dx</strong><span class="classifier">float</span></dt><dd><p>cell spacing in the x-direction</p>
+</dd>
+<dt><strong>dy</strong><span class="classifier">float</span></dt><dd><p>cell spacing in the y-direction</p>
+</dd>
+<dt><strong>rotation</strong></dt><dd><p>rotation of the raster grid in degrees, clockwise</p>
+</dd>
+<dt><strong>Returns</strong></dt><dd></dd>
+<dt><strong>——-</strong></dt><dd></dd>
+<dt><strong>affine.Affine instance</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.get_values_at_points">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">get_values_at_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rasterfile</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">band</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xarray_variable</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_of_bounds_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'coerce'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'nearest'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000000000.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#get_values_at_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.get_values_at_points" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get raster values single point or list of points. Points in
+a different coordinate reference system (CRS) specified with a points_crs will be
+reprojected to the raster CRS prior to sampling.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>rasterfile</strong><span class="classifier">str</span></dt><dd><p>Filename of raster or NetCDF file. NetCDF files are assumed to
+have x and y coordinates in the same CRS as the points.</p>
+</dd>
+<dt><strong>x</strong><span class="classifier">1D array</span></dt><dd><p>X coordinate locations</p>
+</dd>
+<dt><strong>y</strong><span class="classifier">1D array</span></dt><dd><p>Y coordinate locations</p>
+</dd>
+<dt><strong>points</strong><span class="classifier">list of tuples or 2D numpy array (npoints, (row, col))</span></dt><dd><p>Points at which to sample raster.</p>
+</dd>
+<dt><strong>points_crs</strong><span class="classifier">obj, optional</span></dt><dd><p>Coordinate reference system for points or x, y. Only needed if
+different than the CRS for the raster, in which case the points will be
+reprojected to the raster CRS prior to getting the values.
+A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><strong>xarray_variable</strong><span class="classifier">str</span></dt><dd><p>If rasterfile is a NetCDF file, xarray_variable is the name
+of the variable in raster file to sample. Only required
+if rasterfile is a NetCDF file.
+by default, None.</p>
+</dd>
+<dt><strong>out_of_bounds_errors</strong><span class="classifier">{‘raise’, ‘coerce’}, default ‘raise’</span></dt><dd><ul class="simple">
+<li><p>If ‘raise’, then x, y locations outside of the raster will raise an exception.</p></li>
+<li><p>If ‘coerce’, then x, y locations outside of the raster will be set to NaN.</p></li>
+</ul>
+</dd>
+<dt><strong>method</strong><span class="classifier">str ‘nearest’ or ‘linear’</span></dt><dd><p>If ‘nearest’, the rasterio.DatasetReader.index() method is used to
+return the raster values at the nearest cell centers. If ‘linear’,
+scipy.interpolate.interpn is used for bilinear interpolation of values
+between raster cell centers.</p>
+</dd>
+<dt><strong>size_thresh</strong><span class="classifier">float</span></dt><dd><p>Prior to reading any data, the raster size (height * width) is evaluated. If
+the size is larger than size_thresh, point values are read using
+<code class="xref py py-meth docutils literal notranslate"><span class="pre">rasterio.io.DatasetReader.sample()</span></code> (regardless of the specified method),
+which gets nearest pixel values without reading the whole dataset into memory.
+A 32-bit raster of size=1e9 would require approximately 4 GB of memory
+(at 4 bytes per pixel).
+By default, 1e9.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt>list of floats</dt><dd></dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>requires rasterio</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.points_to_raster">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">points_to_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points_shapefiles</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-99</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'values'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">250</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">outfile</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'surface.tif'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#points_to_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.points_to_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate point data to a regular grid using scipy.interpolate.griddata;
+write results to a GeoTiff.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>points_shapefiles</strong><span class="classifier">shapefile or list of shapefiles</span></dt><dd><p>Point shapefiles with estimated data, assumed to be on a regular grid.</p>
+</dd>
+<dt><strong>nodata_value</strong><span class="classifier">numeric</span></dt><dd><p>Value in <cite>points_shapefiles</cite> indicating no data</p>
+</dd>
+<dt><strong>data_col</strong><span class="classifier">str</span></dt><dd><p>Field in <cite>points_shapefiles</cite> with estimated data.</p>
+</dd>
+<dt><strong>output_resolution</strong><span class="classifier">numeric</span></dt><dd><p>Cell spacing of the output raster</p>
+</dd>
+<dt><strong>outfile</strong><span class="classifier">stf</span></dt><dd><p>Output GeoTiff</p>
+</dd>
+<dt><strong>dest_crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.read_arc_ascii">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">read_arc_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#read_arc_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.read_arc_ascii" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.write_arc_ascii">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_arc_ascii</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cellsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_arc_ascii"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_arc_ascii" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write numpy array to Arc Ascii grid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>array</strong><span class="classifier">2D numpy.ndarray</span></dt><dd></dd>
+<dt><strong>filename</strong><span class="classifier">str (file path)</span></dt><dd><p>Name of output arc ascii file</p>
+</dd>
+<dt><strong>xll</strong><span class="classifier">scalar</span></dt><dd><p>X-coordinate of lower left corner of grid</p>
+</dd>
+<dt><strong>yll</strong><span class="classifier">scalar</span></dt><dd><p>Y-coordinate of lower left corner of grid</p>
+</dd>
+<dt><strong>cellsize</strong><span class="classifier">scalar</span></dt><dd><p>Grid spacing</p>
+</dd>
+<dt><strong>nodata</strong><span class="classifier">scalar</span></dt><dd><p>Value indicating cells with no data.</p>
+</dd>
+<dt><strong>kwargs: keyword arguments to numpy.savetxt</strong></dt><dd></dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.write_raster">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">write_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yll</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yul</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">proj_str</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">crs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#write_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.write_raster" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write a numpy array to Arc Ascii grid or shapefile with the model
+reference.</p>
+<dl class="field-list">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl>
+<dt><strong>filename</strong><span class="classifier">str or pathlib.Path</span></dt><dd><p>Path of output file. Export format is determined by
+file extention.
+‘.asc’  Arc Ascii grid
+‘.tif’  GeoTIFF (requries rasterio package)</p>
+</dd>
+<dt><strong>array</strong><span class="classifier">2D numpy.ndarray</span></dt><dd><p>Array to export</p>
+</dd>
+<dt><strong>xll</strong><span class="classifier">float</span></dt><dd><p>x-coordinate of lower left corner of raster grid.
+Either xul, yul or xll, yll must be specified.
+Default = 0.</p>
+</dd>
+<dt><strong>yll</strong><span class="classifier">float</span></dt><dd><p>y-coordinate of lower left corner of raster grid
+Default = 0.</p>
+</dd>
+<dt><strong>xul</strong><span class="classifier">float</span></dt><dd><p>x-coordinate of upper left corner of raster grid.
+Either xul, yul or xll, yll must be specified.</p>
+</dd>
+<dt><strong>yul</strong><span class="classifier">float</span></dt><dd><p>y-coordinate of upper left corner of raster grid</p>
+</dd>
+<dt><strong>dx</strong><span class="classifier">float</span></dt><dd><p>cell spacing in the x-direction</p>
+</dd>
+<dt><strong>dy</strong><span class="classifier">float</span></dt><dd><p>cell spacing in the y-direction
+(optional, assumed equal to dx by default)</p>
+</dd>
+<dt><strong>rotation</strong></dt><dd><p>rotation of the raster grid in degrees, clockwise</p>
+</dd>
+<dt><strong>crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
+passed to the pyproj.crs.from_user_input
+See <a class="reference external" href="http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input">http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input</a>.
+Can be any of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>PROJ string</p></li>
+<li><p>Dictionary of PROJ parameters</p></li>
+<li><p>PROJ keyword arguments for parameters</p></li>
+<li><p>JSON string with PROJ parameters</p></li>
+<li><p>CRS WKT string</p></li>
+<li><p>An authority string [i.e. ‘epsg:4326’]</p></li>
+<li><p>An EPSG integer code [i.e. 4326]</p></li>
+<li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
+<li><p>An object with a <cite>to_wkt</cite> method.</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.4.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+</ul>
+</div></blockquote>
+</dd>
+<dt><strong>nodata</strong><span class="classifier">scalar</span></dt><dd><p>Value to assign to np.nan entries (default -9999)</p>
+</dd>
+<dt><strong>kwargs:</strong></dt><dd><p>keyword arguments to np.savetxt (ascii)
+rasterio.open (GeoTIFF)
+or flopy.export.shapefile_utils.write_grid_shapefile2</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Rotated grids will be either be unrotated prior to export,
+using scipy.ndimage.rotate (Arc Ascii format) or rotation will be
+included in their transform property (GeoTiff format). In either case
+the pixels will be displayed in the (unrotated) projected geographic
+coordinate system, so the pixels will no longer align exactly with the
+model grid (as displayed from a shapefile, for example). A key difference
+between Arc Ascii and GeoTiff (besides disk usage) is that the
+unrotated Arc Ascii will have a different grid size, whereas the GeoTiff
+will have the same number of rows and pixels as the original.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gisutils.raster.zonal_stats">
+<span class="sig-prename descclassname"><span class="pre">gisutils.raster.</span></span><span class="sig-name descname"><span class="pre">zonal_stats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['mean']</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/raster.html#zonal_stats"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.raster.zonal_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gisutils.shapefile.html" class="btn btn-neutral float-left" title="gisutils.shapefile module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gisutils.utils.html" class="btn btn-neutral float-right" title="gisutils.utils module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Andrew Leaf.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
