@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.3.5 (2023-07-19)
+--------------------------
+* bug fix (shp2df): replace ``DataFrame.append()`` call with ``pandas.concat`` for compatibility with ``pandas>=2.0``.
+
 Version 0.3.4 (2023-02-03)
 --------------------------
 * bug fix (shp2df): fiona-related issue with checking for ``None`` type in a list containing geometry objects
