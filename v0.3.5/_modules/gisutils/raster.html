@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gisutils.raster &mdash; gis-utils 0.3.5 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/sphinx_highlight.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> gis-utils
+          </a>
+              <div class="version">
+                0.3.5
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/index.html">Code Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../release-history.html">Release History</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../min_versions.html">Minimum Version of Python and NumPy</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../troubleshooting.html">Troublehsooting</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gis-utils</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gisutils.raster</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gisutils.raster</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Functions for working with rasters.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">fiona</span>
+<span class="kn">from</span> <span class="nn">shapely.geometry</span> <span class="kn">import</span> <span class="n">box</span><span class="p">,</span> <span class="n">mapping</span><span class="p">,</span> <span class="n">Polygon</span>
+<span class="kn">from</span> <span class="nn">shapely</span> <span class="kn">import</span> <span class="n">wkt</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">rasterio</span>
+    <span class="kn">from</span> <span class="nn">rasterio</span> <span class="kn">import</span> <span class="n">Affine</span>
+    <span class="kn">from</span> <span class="nn">rasterio.mask</span> <span class="kn">import</span> <span class="n">mask</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">rasterio</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">interpolate</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">gdal</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="n">gdal</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">from</span> <span class="nn">gisutils.projection</span> <span class="kn">import</span> <span class="n">project</span><span class="p">,</span> <span class="n">get_authority_crs</span><span class="p">,</span> <span class="n">project_raster</span><span class="p">,</span> <span class="n">get_shapefile_crs</span>
+<span class="kn">from</span> <span class="nn">gisutils.shapefile</span> <span class="kn">import</span> <span class="n">shp2df</span>
+
+
+<div class="viewcode-block" id="get_transform"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_transform">[docs]</a><span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="n">xul</span><span class="p">,</span> <span class="n">yul</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns an affine.Affine instance that can be</span>
+<span class="sd">    used to locate raster grids in space. See</span>
+<span class="sd">    https://www.perrygeo.com/python-affine-transforms.html</span>
+<span class="sd">    https://rasterio.readthedocs.io/en/stable/topics/migrating-to-v1.html</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    xul : float</span>
+<span class="sd">        x-coorindate of upper left corner of raster grid</span>
+<span class="sd">    yul : float</span>
+<span class="sd">        y-coorindate of upper left corner of raster grid</span>
+<span class="sd">    dx : float</span>
+<span class="sd">        cell spacing in the x-direction</span>
+<span class="sd">    dy : float</span>
+<span class="sd">        cell spacing in the y-direction</span>
+<span class="sd">    rotation :</span>
+<span class="sd">        rotation of the raster grid in degrees, clockwise</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    affine.Affine instance</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">dy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx</span>
+    <span class="k">return</span> <span class="n">Affine</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="n">xul</span><span class="p">,</span>
+                  <span class="mf">0.</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="n">yul</span><span class="p">)</span> <span class="o">*</span> \
+           <span class="n">Affine</span><span class="o">.</span><span class="n">rotation</span><span class="p">(</span><span class="n">rotation</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_raster_crs"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_raster_crs">[docs]</a><span class="k">def</span> <span class="nf">get_raster_crs</span><span class="p">(</span><span class="n">raster</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    raster : str (filepath)</span>
+<span class="sd">        Path to a raster</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    crs : pyproj.CRS instance</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">raster</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">src</span><span class="o">.</span><span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">crs</span></div>
+
+
+<div class="viewcode-block" id="get_values_at_points"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_values_at_points">[docs]</a><span class="k">def</span> <span class="nf">get_values_at_points</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">band</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                         <span class="n">points</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">points_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">xarray_variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">out_of_bounds_errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">,</span>
+                         <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">size_thresh</span><span class="o">=</span><span class="mf">1e9</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get raster values single point or list of points. Points in</span>
+<span class="sd">    a different coordinate reference system (CRS) specified with a points_crs will be</span>
+<span class="sd">    reprojected to the raster CRS prior to sampling.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rasterfile : str</span>
+<span class="sd">        Filename of raster or NetCDF file. NetCDF files are assumed to</span>
+<span class="sd">        have x and y coordinates in the same CRS as the points.</span>
+<span class="sd">    x : 1D array</span>
+<span class="sd">        X coordinate locations</span>
+<span class="sd">    y : 1D array</span>
+<span class="sd">        Y coordinate locations</span>
+<span class="sd">    points : list of tuples or 2D numpy array (npoints, (row, col))</span>
+<span class="sd">        Points at which to sample raster.</span>
+<span class="sd">    points_crs : obj, optional</span>
+<span class="sd">        Coordinate reference system for points or x, y. Only needed if</span>
+<span class="sd">        different than the CRS for the raster, in which case the points will be</span>
+<span class="sd">        reprojected to the raster CRS prior to getting the values.</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+<span class="sd">    xarray_variable : str</span>
+<span class="sd">        If rasterfile is a NetCDF file, xarray_variable is the name</span>
+<span class="sd">        of the variable in raster file to sample. Only required</span>
+<span class="sd">        if rasterfile is a NetCDF file.</span>
+<span class="sd">        by default, None.</span>
+<span class="sd">    out_of_bounds_errors : {‘raise’, ‘coerce’}, default &#39;raise&#39;</span>
+<span class="sd">        * If &#39;raise&#39;, then x, y locations outside of the raster will raise an exception.</span>
+<span class="sd">        * If &#39;coerce&#39;, then x, y locations outside of the raster will be set to NaN.</span>
+<span class="sd">    method : str &#39;nearest&#39; or &#39;linear&#39;</span>
+<span class="sd">        If &#39;nearest&#39;, the rasterio.DatasetReader.index() method is used to</span>
+<span class="sd">        return the raster values at the nearest cell centers. If &#39;linear&#39;,</span>
+<span class="sd">        scipy.interpolate.interpn is used for bilinear interpolation of values</span>
+<span class="sd">        between raster cell centers.</span>
+<span class="sd">    size_thresh : float</span>
+<span class="sd">        Prior to reading any data, the raster size (height * width) is evaluated. If</span>
+<span class="sd">        the size is larger than size_thresh, point values are read using</span>
+<span class="sd">        :meth:`rasterio.io.DatasetReader.sample` (regardless of the specified method),</span>
+<span class="sd">        which gets nearest pixel values without reading the whole dataset into memory.</span>
+<span class="sd">        A 32-bit raster of size=1e9 would require approximately 4 GB of memory</span>
+<span class="sd">        (at 4 bytes per pixel).</span>
+<span class="sd">        By default, 1e9.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of floats</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    requires rasterio</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+
+    <span class="c1"># read in sample points</span>
+    <span class="n">array_shape</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;new argument input for get_values_at_points is x, y, or points&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">array_shape</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">array_shape</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span>
+            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">points</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">points</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Must supply x, y or list/array of points.&#39;</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">),</span> <span class="s2">&quot;raster </span><span class="si">{}</span><span class="s2"> not found&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reading data from </span><span class="si">{}</span><span class="s2">...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">))</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="kc">None</span>
+    
+    <span class="c1"># getting points from a netcdf file</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">)</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nc&#39;</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">xarray_variable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Input of NetCDF file for the raster &#39;</span>
+                             <span class="s1">&#39;requires specification of an xarray_variable.&#39;</span><span class="p">)</span>
+        <span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">)</span>
+        
+        <span class="n">x</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="s2">&quot;z&quot;</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">ds</span><span class="p">[</span><span class="n">xarray_variable</span><span class="p">]</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">)</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">values</span>
+        
+    <span class="c1"># getting points from any raster openable by rasterio</span>
+    <span class="k">else</span><span class="p">:</span>
+    
+        <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">rasterfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+            <span class="n">meta</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">meta</span>
+            <span class="n">nodata</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;nodata&#39;</span><span class="p">]</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">src</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">size</span> <span class="o">&lt;</span> <span class="n">size_thresh</span><span class="p">:</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">band</span><span class="p">)</span>
+
+            <span class="c1"># reproject coordinates if needed</span>
+            <span class="k">if</span> <span class="n">points_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">points_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">points_crs</span><span class="p">)</span>
+                <span class="n">raster_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">raster_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Input raster </span><span class="si">{</span><span class="n">rasterfile</span><span class="si">}</span><span class="s1"> does not have a projection (CRS) assigned!&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">points_crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">points_crs</span> <span class="o">!=</span> <span class="n">raster_crs</span><span class="p">:</span>
+                        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">project</span><span class="p">((</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">points_crs</span><span class="p">,</span> <span class="n">raster_crs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)))</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">results</span><span class="p">)))</span>
+                <span class="n">results</span> <span class="o">=</span> <span class="n">results</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">method</span> <span class="o">==</span> <span class="s1">&#39;nearest&#39;</span><span class="p">:</span>
+            <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
+            <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
+            <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+
+            <span class="c1"># mask row, col locations outside the raster</span>
+            <span class="n">within</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">i</span> <span class="o">&lt;</span> <span class="n">nrow</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">j</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">j</span> <span class="o">&lt;</span> <span class="n">ncol</span><span class="p">)</span>
+
+            <span class="c1"># get values at valid point locations</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">results</span><span class="p">[</span><span class="n">within</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="n">within</span><span class="p">],</span> <span class="n">j</span><span class="p">[</span><span class="n">within</span><span class="p">]]</span>
+            <span class="k">if</span> <span class="n">out_of_bounds_errors</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">results</span><span class="p">)):</span>
+                <span class="n">n_invalid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> points outside of </span><span class="si">{}</span><span class="s2"> extent.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n_invalid</span><span class="p">,</span> <span class="n">rasterfile</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># map the points to interpolate to onto the raster coordinate system</span>
+            <span class="c1"># (in case the raster is rotated)</span>
+            <span class="n">x_rx</span><span class="p">,</span> <span class="n">y_ry</span> <span class="o">=</span> <span class="o">~</span><span class="n">src</span><span class="o">.</span><span class="n">transform</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="c1"># coordinates of raster pixel centers in raster coordinate system</span>
+            <span class="c1"># (e.g. i,j = 0, 0 = 0.5, 0.5)</span>
+            <span class="n">pad</span> <span class="o">=</span> <span class="mf">0.5</span>  <span class="c1"># extra padding, in pixels, so that points within the outer pixels are still counted</span>
+            <span class="n">padding</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">-</span> <span class="n">pad</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+            <span class="n">rx</span> <span class="o">=</span> <span class="n">padding</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">width</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">width</span> <span class="o">-</span> <span class="n">padding</span><span class="p">)</span>
+            <span class="n">ry</span> <span class="o">=</span> <span class="n">padding</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">height</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="n">padding</span><span class="p">)</span>
+            <span class="c1"># pad the coordinates and the data</span>
+            <span class="n">pad_width</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">pad</span><span class="p">))</span>
+            <span class="n">padded</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">),</span> <span class="n">pad_width</span><span class="o">=</span><span class="n">pad_width</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;edge&#39;</span><span class="p">)</span>
+
+            <span class="c1"># exclude nodata points prior to interpolating</span>
+            <span class="n">padded</span><span class="p">[</span><span class="n">padded</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+            <span class="n">bounds_error</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="n">out_of_bounds_errors</span> <span class="o">==</span> <span class="s1">&#39;raise&#39;</span><span class="p">:</span>
+                <span class="n">bounds_error</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">results</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">interpn</span><span class="p">((</span><span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">),</span> <span class="n">padded</span><span class="p">,</span>
+                                        <span class="p">(</span><span class="n">y_ry</span><span class="p">,</span> <span class="n">x_rx</span><span class="p">),</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span>
+                                        <span class="n">bounds_error</span><span class="o">=</span><span class="n">bounds_error</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">nodata</span><span class="p">)</span>
+        <span class="c1"># convert nodata values to np.nans</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">results</span> <span class="o">==</span> <span class="n">nodata</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># reshape to input shape</span>
+    <span class="k">if</span> <span class="n">array_shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">array_shape</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;finished in </span><span class="si">{:.2f}</span><span class="s2">s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="points_to_raster"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.points_to_raster">[docs]</a><span class="k">def</span> <span class="nf">points_to_raster</span><span class="p">(</span><span class="n">points_shapefiles</span><span class="p">,</span> <span class="n">nodata_value</span><span class="o">=-</span><span class="mi">99</span><span class="p">,</span>
+                     <span class="n">data_col</span><span class="o">=</span><span class="s1">&#39;values&#39;</span><span class="p">,</span>
+                     <span class="n">output_resolution</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+                     <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;surface.tif&#39;</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interpolate point data to a regular grid using scipy.interpolate.griddata;</span>
+<span class="sd">    write results to a GeoTiff.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points_shapefiles : shapefile or list of shapefiles</span>
+<span class="sd">        Point shapefiles with estimated data, assumed to be on a regular grid.</span>
+<span class="sd">    nodata_value : numeric</span>
+<span class="sd">        Value in `points_shapefiles` indicating no data</span>
+<span class="sd">    data_col : str</span>
+<span class="sd">        Field in `points_shapefiles` with estimated data.</span>
+<span class="sd">    output_resolution : numeric</span>
+<span class="sd">        Cell spacing of the output raster</span>
+<span class="sd">    outfile : stf</span>
+<span class="sd">        Output GeoTiff</span>
+<span class="sd">    dest_crs : obj</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">shp2df</span><span class="p">(</span><span class="n">points_shapefiles</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="n">dest_crs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">dest_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dest_crs</span> <span class="o">=</span> <span class="n">get_shapefile_crs</span><span class="p">(</span><span class="n">points_shapefiles</span><span class="p">)</span>
+
+    <span class="c1"># reshape the values column to a nrow x ncol array; convert invalid values to nans</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">data_col</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+    <span class="n">data</span><span class="p">[</span><span class="n">data</span> <span class="o">==</span> <span class="n">nodata_value</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+    <span class="c1"># coordinates for the orignal grid (aligned with NHG cell corners)</span>
+    <span class="n">x_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">g</span><span class="o">.</span><span class="n">x</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">])</span>
+    <span class="n">y_points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">g</span><span class="o">.</span><span class="n">y</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">geometry</span><span class="p">])</span>
+
+    <span class="c1"># specifications for a new output_resolution grid aligned with NHG</span>
+    <span class="c1"># xul, yul is the cell center of the first cell (in the upper left corner)</span>
+    <span class="n">xul</span> <span class="o">=</span> <span class="n">x_points</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+    <span class="n">yul</span> <span class="o">=</span> <span class="n">y_points</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">dxy</span> <span class="o">=</span> <span class="n">output_resolution</span>
+
+    <span class="c1"># 1D arrays of x and y coordinates for each column, row</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x_points</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x_points</span><span class="p">)</span> <span class="o">+</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dxy</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y_points</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y_points</span><span class="p">)</span> <span class="o">+</span> <span class="n">dxy</span><span class="p">,</span> <span class="n">dxy</span><span class="p">)</span>
+
+    <span class="c1"># 2D arrays of x and y coordinates for each point</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">meshgrid</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># interpolate the values onto the new grid</span>
+    <span class="c1"># using bilinear interpolation</span>
+    <span class="c1"># `bounds_error=False` means extrapolated points will be filled with nans</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">interpolate</span><span class="o">.</span><span class="n">griddata</span><span class="p">((</span><span class="n">x_points</span><span class="p">,</span> <span class="n">y_points</span><span class="p">),</span> <span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">),</span>
+                                   <span class="n">method</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+
+    <span class="n">results</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">results</span><span class="p">))</span>
+    <span class="n">write_raster</span><span class="p">(</span><span class="n">outfile</span><span class="p">,</span> <span class="n">results</span><span class="p">,</span> <span class="n">xul</span><span class="o">=</span><span class="n">xul</span><span class="p">,</span> <span class="n">yul</span><span class="o">=</span><span class="n">yul</span><span class="p">,</span>
+                 <span class="n">dx</span><span class="o">=</span><span class="n">dxy</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="n">dxy</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="n">dest_crs</span><span class="p">,</span>
+                 <span class="n">nodata</span><span class="o">=-</span><span class="mi">9999</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="write_raster"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.write_raster">[docs]</a><span class="k">def</span> <span class="nf">write_raster</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="n">xll</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">yll</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">xul</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">yul</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">dx</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">nodata</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write a numpy array to Arc Ascii grid or shapefile with the model</span>
+<span class="sd">    reference.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str or pathlib.Path</span>
+<span class="sd">        Path of output file. Export format is determined by</span>
+<span class="sd">        file extention.</span>
+<span class="sd">        &#39;.asc&#39;  Arc Ascii grid</span>
+<span class="sd">        &#39;.tif&#39;  GeoTIFF (requries rasterio package)</span>
+<span class="sd">    array : 2D numpy.ndarray</span>
+<span class="sd">        Array to export</span>
+<span class="sd">    xll : float</span>
+<span class="sd">        x-coordinate of lower left corner of raster grid.</span>
+<span class="sd">        Either xul, yul or xll, yll must be specified.</span>
+<span class="sd">        Default = 0.</span>
+<span class="sd">    yll : float</span>
+<span class="sd">        y-coordinate of lower left corner of raster grid</span>
+<span class="sd">        Default = 0.</span>
+<span class="sd">    xul : float</span>
+<span class="sd">        x-coordinate of upper left corner of raster grid.</span>
+<span class="sd">        Either xul, yul or xll, yll must be specified.</span>
+<span class="sd">    yul : float</span>
+<span class="sd">        y-coordinate of upper left corner of raster grid</span>
+<span class="sd">    dx : float</span>
+<span class="sd">        cell spacing in the x-direction</span>
+<span class="sd">    dy : float</span>
+<span class="sd">        cell spacing in the y-direction</span>
+<span class="sd">        (optional, assumed equal to dx by default)</span>
+<span class="sd">    rotation :</span>
+<span class="sd">        rotation of the raster grid in degrees, clockwise</span>
+<span class="sd">    crs : obj</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+<span class="sd">    nodata : scalar</span>
+<span class="sd">        Value to assign to np.nan entries (default -9999)</span>
+<span class="sd">    kwargs:</span>
+<span class="sd">        keyword arguments to np.savetxt (ascii)</span>
+<span class="sd">        rasterio.open (GeoTIFF)</span>
+<span class="sd">        or flopy.export.shapefile_utils.write_grid_shapefile2</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Rotated grids will be either be unrotated prior to export,</span>
+<span class="sd">    using scipy.ndimage.rotate (Arc Ascii format) or rotation will be</span>
+<span class="sd">    included in their transform property (GeoTiff format). In either case</span>
+<span class="sd">    the pixels will be displayed in the (unrotated) projected geographic</span>
+<span class="sd">    coordinate system, so the pixels will no longer align exactly with the</span>
+<span class="sd">    model grid (as displayed from a shapefile, for example). A key difference</span>
+<span class="sd">    between Arc Ascii and GeoTiff (besides disk usage) is that the</span>
+<span class="sd">    unrotated Arc Ascii will have a different grid size, whereas the GeoTiff</span>
+<span class="sd">    will have the same number of rows and pixels as the original.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">array</span>
+    <span class="c1"># third dimension is the number of bands</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="n">count</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="k">if</span> <span class="n">proj_str</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;gisutils.write_raster: the proj_str argument is deprecated; use crs instead&#39;</span><span class="p">,</span>
+                      <span class="ne">DeprecationWarning</span><span class="p">)</span>
+        <span class="n">crs</span> <span class="o">=</span> <span class="n">proj_str</span>
+
+    <span class="k">if</span> <span class="n">xul</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">yul</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># default to decreasing y coordinates if upper left is specified</span>
+        <span class="k">if</span> <span class="n">dy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  
+            <span class="n">dy</span> <span class="o">=</span> <span class="o">-</span><span class="n">dx</span>
+        <span class="n">xll</span> <span class="o">=</span> <span class="n">_xul_to_xll</span><span class="p">(</span><span class="n">xul</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+        <span class="n">yll</span> <span class="o">=</span> <span class="n">_yul_to_yll</span><span class="p">(</span><span class="n">yul</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">xll</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">yll</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># default to increasing y coordinates if lower left is specified</span>
+        <span class="k">if</span> <span class="n">dy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dy</span> <span class="o">=</span> <span class="n">dx</span>
+        <span class="n">xul</span> <span class="o">=</span> <span class="n">_xll_to_xul</span><span class="p">(</span><span class="n">xll</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+        <span class="n">yul</span> <span class="o">=</span> <span class="n">_yll_to_yul</span><span class="p">(</span><span class="n">yll</span><span class="p">,</span> <span class="n">height</span> <span class="o">*</span> <span class="n">dy</span><span class="p">,</span> <span class="n">rotation</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.tif&quot;</span><span class="p">):</span>
+        <span class="n">trans</span> <span class="o">=</span> <span class="n">get_transform</span><span class="p">(</span><span class="n">xul</span><span class="o">=</span><span class="n">xul</span><span class="p">,</span> <span class="n">yul</span><span class="o">=</span><span class="n">yul</span><span class="p">,</span>
+                              <span class="n">dx</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="o">=-</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">dy</span><span class="p">),</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">)</span>
+
+        <span class="c1"># third dimension is the number of bands</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;count&#39;</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
+                <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span>
+                <span class="s1">&#39;nodata&#39;</span><span class="p">:</span> <span class="n">nodata</span><span class="p">,</span>
+                <span class="s1">&#39;dtype&#39;</span><span class="p">:</span> <span class="n">a</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                <span class="s1">&#39;driver&#39;</span><span class="p">:</span> <span class="s1">&#39;GTiff&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">crs</span><span class="p">,</span>
+                <span class="s1">&#39;transform&#39;</span><span class="p">:</span> <span class="n">trans</span><span class="p">,</span>
+                <span class="s1">&#39;compress&#39;</span><span class="p">:</span> <span class="s1">&#39;lzw&#39;</span>
+                <span class="p">}</span>
+        <span class="n">meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">meta</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+            <span class="n">dst</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">):</span>
+                <span class="n">dst</span><span class="o">.</span><span class="n">write_mask</span><span class="p">(</span><span class="o">~</span><span class="n">a</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;wrote </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+
+    <span class="k">elif</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.asc&quot;</span><span class="p">):</span>
+        <span class="n">path</span><span class="p">,</span> <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">fname</span><span class="p">,</span> <span class="n">ext</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">band</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;.asc&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">filename</span> <span class="o">=</span>  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">fname</span> <span class="o">+</span> <span class="s1">&#39;_</span><span class="si">{}</span><span class="s1">.asc&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">band</span><span class="p">))</span>
+            <span class="n">write_arc_ascii</span><span class="p">(</span><span class="n">a</span><span class="p">[</span><span class="n">band</span><span class="p">],</span> <span class="n">filename</span><span class="p">,</span> <span class="n">xll</span><span class="o">=</span><span class="n">xll</span><span class="p">,</span> <span class="n">yll</span><span class="o">=</span><span class="n">yll</span><span class="p">,</span>
+                            <span class="n">cellsize</span><span class="o">=</span><span class="n">dx</span><span class="p">,</span>
+                            <span class="n">nodata</span><span class="o">=</span><span class="n">nodata</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;raster creation took </span><span class="si">{:.2f}</span><span class="s2">s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="zonal_stats"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.zonal_stats">[docs]</a><span class="k">def</span> <span class="nf">zonal_stats</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">raster</span><span class="p">,</span> <span class="n">out_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">stats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">rasterstats</span> <span class="kn">import</span> <span class="n">zonal_stats</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;This function requires rasterstats.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">feature_name</span> <span class="o">=</span> <span class="s1">&#39;feature&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">feature_name</span> <span class="o">=</span> <span class="n">feature</span>
+    <span class="n">t0</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;computing </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> for zones in </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">raster</span><span class="p">,</span>
+                                                      <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">stats</span><span class="p">),</span>
+                                                      <span class="n">feature_name</span>
+                                                      <span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">stats</span><span class="p">)</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">zonal_stats</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">raster</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="n">stats</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">out_shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">out_shape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">out_shape</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">results</span><span class="p">),)</span>
+    <span class="c1">#print(results)</span>
+    <span class="c1">#means = [r[&#39;mean&#39;] for r in results]</span>
+    <span class="c1">#means = np.asarray(means)</span>
+    <span class="c1">#means = np.reshape(means, out_shape).astype(float)</span>
+    <span class="c1">#results = means</span>
+
+    <span class="c1">#results = np.reshape(results, out_shape)</span>
+    <span class="c1">#results = np.reshape(results, out_shape).astype(float)</span>
+    <span class="n">results_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">stats</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="p">[</span><span class="n">stat</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">out_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">results_dict</span><span class="p">[</span><span class="n">stat</span><span class="p">]</span> <span class="o">=</span> <span class="n">res</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;finished in </span><span class="si">{:.2f}</span><span class="s2">s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">results_dict</span></div>
+
+
+<div class="viewcode-block" id="read_arc_ascii"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.read_arc_ascii">[docs]</a><span class="k">def</span> <span class="nf">read_arc_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">meta</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">6</span><span class="p">):</span>
+            <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;.&#39;</span> <span class="ow">in</span> <span class="n">v</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="n">meta</span><span class="p">[</span><span class="n">k</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="c1"># make a gdal-style geotransform</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;cellsize&#39;</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;cellsize&#39;</span><span class="p">]</span>
+        <span class="n">xul</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;xllcorner&#39;</span><span class="p">]</span>
+        <span class="n">yul</span> <span class="o">=</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;yllcorner&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">dy</span> <span class="o">*</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;nrows&#39;</span><span class="p">]</span>
+        <span class="n">rx</span><span class="p">,</span> <span class="n">ry</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;geotransform&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dx</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">xul</span><span class="p">,</span> <span class="n">ry</span><span class="p">,</span> <span class="o">-</span><span class="n">dy</span><span class="p">,</span> <span class="n">yul</span>
+
+        <span class="k">if</span> <span class="n">shape</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="p">(</span><span class="n">meta</span><span class="p">[</span><span class="s1">&#39;nrows&#39;</span><span class="p">],</span> <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;ncols&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">shape</span><span class="p">,</span> \
+                <span class="s2">&quot;Data in </span><span class="si">{}</span><span class="s2"> are </span><span class="si">{}</span><span class="s2">x</span><span class="si">{}</span><span class="s2">, expected </span><span class="si">{}</span><span class="s2">x</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span>
+                                                              <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;nrows&#39;</span><span class="p">],</span>
+                                                              <span class="n">meta</span><span class="p">[</span><span class="s1">&#39;ncols&#39;</span><span class="p">],</span>
+                                                              <span class="o">*</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">arr</span><span class="p">,</span> <span class="n">meta</span></div>
+
+
+<div class="viewcode-block" id="write_arc_ascii"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.write_arc_ascii">[docs]</a><span class="k">def</span> <span class="nf">write_arc_ascii</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">xll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">yll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cellsize</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
+                    <span class="n">nodata</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Write numpy array to Arc Ascii grid.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    array : 2D numpy.ndarray</span>
+<span class="sd">    filename : str (file path)</span>
+<span class="sd">        Name of output arc ascii file</span>
+<span class="sd">    xll : scalar</span>
+<span class="sd">        X-coordinate of lower left corner of grid</span>
+<span class="sd">    yll : scalar</span>
+<span class="sd">        Y-coordinate of lower left corner of grid</span>
+<span class="sd">    cellsize : scalar</span>
+<span class="sd">        Grid spacing</span>
+<span class="sd">    nodata : scalar</span>
+<span class="sd">        Value indicating cells with no data.</span>
+<span class="sd">    kwargs: keyword arguments to numpy.savetxt</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">array</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">array</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">array</span><span class="p">)]</span> <span class="o">=</span> <span class="n">nodata</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s1">&#39;.asc&#39;</span>  <span class="c1"># enforce .asc ending</span>
+    <span class="n">nrow</span><span class="p">,</span> <span class="n">ncol</span> <span class="o">=</span> <span class="n">array</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;ncols  </span><span class="si">{:d}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ncol</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">+=</span> <span class="s1">&#39;nrows  </span><span class="si">{:d}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nrow</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">+=</span> <span class="s1">&#39;xllcorner  </span><span class="si">{:f}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">xll</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">+=</span> <span class="s1">&#39;yllcorner  </span><span class="si">{:f}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">yll</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">+=</span> <span class="s1">&#39;cellsize  </span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cellsize</span><span class="p">)</span>
+    <span class="n">txt</span> <span class="o">+=</span> <span class="s1">&#39;NODATA_value  </span><span class="si">{:.0f}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">nodata</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;ab&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">savetxt</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">array</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;wrote </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span></div>
+
+
+<span class="k">def</span> <span class="nf">_xul_to_xll</span><span class="p">(</span><span class="n">xul</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">rotation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="n">xul</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_xll_to_xul</span><span class="p">(</span><span class="n">xll</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">rotation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="n">xll</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_yul_to_yll</span><span class="p">(</span><span class="n">yul</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">rotation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="n">yul</span> <span class="o">-</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_yll_to_yul</span><span class="p">(</span><span class="n">yul</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
+    <span class="n">theta</span> <span class="o">=</span> <span class="n">rotation</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span>
+    <span class="k">return</span> <span class="n">yul</span> <span class="o">+</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">height</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="clip_raster"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.clip_raster">[docs]</a><span class="k">def</span> <span class="nf">clip_raster</span><span class="p">(</span><span class="n">inraster</span><span class="p">,</span> <span class="n">clip_features</span><span class="p">,</span> <span class="n">outraster</span><span class="p">,</span>
+                <span class="n">clip_features_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">clip_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">project_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Clip raster to feature extent(s), write the output</span>
+<span class="sd">    to a new raster file. If the feature extent(s) are in</span>
+<span class="sd">    a different coordinate reference system, the raster will first</span>
+<span class="sd">    be reprojected to that CRS and then clipped. The output raster</span>
+<span class="sd">    will be in the CRS of the clip features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inraster : str</span>
+<span class="sd">        Path to a raster file readable by rasterio.open</span>
+<span class="sd">    clip_features : str or list-like</span>
+<span class="sd">        Shapefile or sequence of features. Features can be in</span>
+<span class="sd">        any format accepted by gisutils.raster.get_feature_geojson()</span>
+<span class="sd">    outraster : str</span>
+<span class="sd">        Filename for output raster.</span>
+<span class="sd">    clip_features_crs : obj</span>
+<span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
+<span class="sd">        passed to the pyproj.crs.from_user_input</span>
+<span class="sd">        See http://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.from_user_input.</span>
+<span class="sd">        Can be any of:</span>
+<span class="sd">        </span>
+<span class="sd">          - PROJ string</span>
+<span class="sd">          - Dictionary of PROJ parameters</span>
+<span class="sd">          - PROJ keyword arguments for parameters</span>
+<span class="sd">          - JSON string with PROJ parameters</span>
+<span class="sd">          - CRS WKT string</span>
+<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An EPSG integer code [i.e. 4326]</span>
+<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - An object with a `to_wkt` method.</span>
+<span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
+<span class="sd">    clip_kwargs: dict</span>
+<span class="sd">        Keyword arguments to rasterio.mask</span>
+<span class="sd">    project_kwargs : dict</span>
+<span class="sd">        Key word arguments to gisutils.projection.project_raster()</span>
+<span class="sd">        These are only used if the clip features are</span>
+<span class="sd">        in a different coordinate system, in which case</span>
+<span class="sd">        the raster will be reprojected into that coordinate</span>
+<span class="sd">        system.</span>
+<span class="sd">    kwargs : keyword arguments</span>
+<span class="sd">        Keyword arguments to rasterio.open for writing the output raster.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">clip_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">clip_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">project_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">project_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">inraster</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="n">raster_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">)</span>
+
+    <span class="c1"># start with assumption of same coordinates</span>
+    <span class="k">if</span> <span class="n">clip_features_crs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">clip_features_crs</span> <span class="o">=</span> <span class="n">raster_crs</span>
+    <span class="c1"># get the clip feature crs from shapefile</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clip_features</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clip_features</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">Path</span><span class="p">(</span><span class="n">clip_features</span><span class="p">)</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+            <span class="n">clip_features_crs</span> <span class="o">=</span> <span class="n">get_shapefile_crs</span><span class="p">(</span><span class="n">clip_features</span><span class="p">)</span>
+    <span class="c1"># otherwise if clip feature crs was specified</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">clip_features_crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">clip_features_crs</span><span class="p">)</span>
+
+    <span class="c1"># convert the clip_features to geojson</span>
+    <span class="n">geoms</span> <span class="o">=</span> <span class="n">get_feature_geojson</span><span class="p">(</span><span class="n">clip_features</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;input raster crs:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">raster_crs</span><span class="p">),</span>
+          <span class="s1">&#39;clip feature crs:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">clip_features_crs</span><span class="p">))</span>
+    <span class="c1"># if the coordinate systems are not the same</span>
+    <span class="c1"># reproject the raster first before clipping</span>
+    <span class="c1"># this could be greatly sped up by first clipping the input raster prior to reprojecting</span>
+    <span class="k">if</span> <span class="n">raster_crs</span> <span class="o">!=</span> <span class="n">clip_features_crs</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">project_kwargs</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tmpraster</span> <span class="o">=</span> <span class="s1">&#39;tmp.tif&#39;</span>
+        <span class="n">tmpraster2</span> <span class="o">=</span> <span class="s1">&#39;tmp2.tif&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Input raster and clip feature(s) are in different coordinate systems.</span><span class="se">\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;Reprojecting input raster from</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1">to</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">raster_crs</span><span class="p">,</span> <span class="n">clip_features_crs</span><span class="p">))</span>
+        <span class="c1"># make prelim clip of raster to speed up reprojection</span>
+        <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">get_geojson_collection_bounds</span><span class="p">(</span><span class="n">geoms</span><span class="p">)</span>
+        <span class="n">longest_side</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">xmax</span> <span class="o">-</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">-</span> <span class="n">ymin</span><span class="p">])</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="n">box</span><span class="p">(</span><span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="n">longest_side</span> <span class="o">*</span> <span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">bounds</span> <span class="o">=</span> <span class="n">project</span><span class="p">(</span><span class="n">bounds</span><span class="p">,</span> <span class="n">clip_features_crs</span><span class="p">,</span> <span class="n">raster_crs</span><span class="p">)</span>
+        <span class="n">_clip_raster</span><span class="p">(</span><span class="n">inraster</span><span class="p">,</span> <span class="p">[</span><span class="n">bounds</span><span class="p">],</span> <span class="n">tmpraster</span><span class="p">,</span> <span class="n">clip_kwargs</span><span class="o">=</span><span class="n">clip_kwargs</span><span class="p">)</span>
+        <span class="n">project_raster</span><span class="p">(</span><span class="n">tmpraster</span><span class="p">,</span> <span class="n">tmpraster2</span><span class="p">,</span> <span class="n">clip_features_crs</span><span class="p">,</span> <span class="o">**</span><span class="n">project_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">inraster</span> <span class="o">=</span> <span class="n">tmpraster2</span>
+
+    <span class="n">_clip_raster</span><span class="p">(</span><span class="n">inraster</span><span class="p">,</span> <span class="n">geoms</span><span class="p">,</span> <span class="n">outraster</span><span class="p">,</span> <span class="n">clip_kwargs</span><span class="o">=</span><span class="n">clip_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">raster_crs</span> <span class="o">!=</span> <span class="n">clip_features_crs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">tmp</span> <span class="ow">in</span> <span class="p">[</span><span class="n">tmpraster</span><span class="p">,</span> <span class="n">tmpraster2</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tmp</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;removing </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_clip_raster</span><span class="p">(</span><span class="n">inraster</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outraster</span><span class="p">,</span> <span class="n">clip_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Clips a raster to clip_features in the same coordinate</span>
+<span class="sd">    reference system, write the output to a new raster file.</span>
+
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inraster : str</span>
+<span class="sd">        Path to a raster file readable by rasterio.open</span>
+<span class="sd">    features : str or list-like</span>
+<span class="sd">        Shapefile or sequence of clip_features. Features can be in</span>
+<span class="sd">        any format accepted by gisutils.raster.get_feature_geojson()</span>
+<span class="sd">    outraster : str</span>
+<span class="sd">        Filename for output raster.</span>
+<span class="sd">    clip_kwargs : dict</span>
+<span class="sd">        Keyword arguments to rasterio.mask for clipping the raster</span>
+<span class="sd">    kwargs : keyword arguments</span>
+<span class="sd">        Keyword arguments to rasterio.open for writing the output raster.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+    <span class="c1"># convert the clip_features to geojson</span>
+    <span class="n">geoms</span> <span class="o">=</span> <span class="n">get_feature_geojson</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">inraster</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;clipping </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inraster</span><span class="p">))</span>
+
+        <span class="n">defaults</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;crop&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="s1">&#39;nodata&#39;</span><span class="p">:</span> <span class="n">src</span><span class="o">.</span><span class="n">nodata</span><span class="p">,</span>
+                    <span class="c1">#&#39;pad&#39;: True,</span>
+                    <span class="s1">&#39;all_touched&#39;</span><span class="p">:</span> <span class="kc">True</span>
+                    <span class="p">}</span>
+        <span class="n">defaults</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">clip_kwargs</span><span class="p">)</span>
+
+        <span class="n">out_image</span><span class="p">,</span> <span class="n">out_transform</span> <span class="o">=</span> <span class="n">mask</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">geoms</span><span class="p">,</span> <span class="o">**</span><span class="n">defaults</span><span class="p">)</span>
+        <span class="n">out_meta</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">out_meta</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">&quot;driver&quot;</span><span class="p">:</span> <span class="s2">&quot;GTiff&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;compress&quot;</span><span class="p">:</span> <span class="s2">&quot;lzw&quot;</span><span class="p">,</span>
+                         <span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="n">out_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                         <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="n">out_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+                         <span class="s2">&quot;transform&quot;</span><span class="p">:</span> <span class="n">out_transform</span><span class="p">})</span>
+        <span class="n">out_meta</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">nodata_values</span> <span class="o">=</span> <span class="n">out_image</span> <span class="o">==</span> <span class="n">out_meta</span><span class="p">[</span><span class="s1">&#39;nodata&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">nodata_values</span><span class="p">):</span>
+            <span class="n">out_image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">(</span><span class="n">out_image</span><span class="p">,</span>
+                                           <span class="n">mask</span><span class="o">=</span><span class="n">nodata_values</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">outraster</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">out_meta</span><span class="p">)</span> <span class="k">as</span> <span class="n">dest</span><span class="p">:</span>
+            <span class="n">dest</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out_image</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">out_image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_array</span><span class="p">):</span>
+                <span class="n">dest</span><span class="o">.</span><span class="n">write_mask</span><span class="p">(</span><span class="o">~</span><span class="n">out_image</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;wrote </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outraster</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="get_feature_geojson"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_feature_geojson">[docs]</a><span class="k">def</span> <span class="nf">get_feature_geojson</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;convert input clip_features to list of clip_features in the</span>
+<span class="sd">    geojson format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    features : str (shapefile path) or list of clip_features</span>
+<span class="sd">        If clip_features is a list, the clip_features can be in shapely polygon</span>
+<span class="sd">        or wkt format (e.g. input to shapely.geometry.shape())</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    geoms : list of geojson clip_features</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># clip_features is a single shapely geometry</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">Polygon</span><span class="p">):</span>
+        <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapping</span><span class="p">(</span><span class="n">features</span><span class="p">)]</span>
+    <span class="c1"># clip_features is a single geojson geometry</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">features</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="c1"># clip_features is a single wkt string</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapping</span><span class="p">(</span><span class="n">wkt</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">features</span><span class="p">))]</span>
+        <span class="c1"># assume clip_features are in a shapefile</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+                <span class="k">with</span> <span class="n">fiona</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">shp</span><span class="p">:</span>
+                    <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">feature</span><span class="p">[</span><span class="s2">&quot;geometry&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">shp</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unrecognized feature type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="c1"># clip_features are geo-json</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">geoms</span> <span class="o">=</span> <span class="n">features</span>
+        <span class="c1"># clip_features are wkt strings</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapping</span><span class="p">(</span><span class="n">wkt</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">f</span><span class="p">))</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unrecognized feature type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+        <span class="c1"># clip_features are shapely geometries</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">mapping</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">mapping</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">features</span><span class="p">]</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unrecognized feature type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Unrecognized feature type: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">geoms</span></div>
+
+
+<div class="viewcode-block" id="get_geojson_collection_bounds"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_geojson_collection_bounds">[docs]</a><span class="k">def</span> <span class="nf">get_geojson_collection_bounds</span><span class="p">(</span><span class="n">geojsoncollection</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the bounds for a collection of geojson clip_features.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geojsoncollection : sequence</span>
+<span class="sd">        Sequence of geojson clip_features</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    xmin, xmax, ymin, ymax</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">geojsoncollection</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">crds</span> <span class="ow">in</span> <span class="n">feature</span><span class="p">[</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">crds</span><span class="p">)</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">xmax</span><span class="p">)</span>
+            <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">ymin</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">ymax</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xmin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">ymax</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2019, Andrew Leaf.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
