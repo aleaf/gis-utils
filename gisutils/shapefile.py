@@ -238,7 +238,7 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
     if dest_crs is not None:
         dest_crs = get_authority_crs(dest_crs)
 
-    df = pd.DataFrame()
+    dfs = []
     for shp in shplist:
         print("\nreading {}...".format(shp))
         if not os.path.exists(shp):
@@ -329,21 +329,22 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
         if shp_crs is not None and dest_crs is not None and shp_crs != dest_crs:
             shp_df['geometry'] = project(shp_df['geometry'], shp_crs, dest_crs)
 
-        df = df.append(shp_df)
+        dfs.append(shp_df)
 
-        # convert any t/f columns to numpy boolean data
-        if true_values is not None or false_values is not None:
-            replace_boolean = {}
-            for t in true_values:
-                replace_boolean[t] = True
-            for f in false_values:
-                replace_boolean[f] = False
+    df = pd.concat(dfs, axis=0)
+    # convert any t/f columns to numpy boolean data
+    if true_values is not None or false_values is not None:
+        replace_boolean = {}
+        for t in true_values:
+            replace_boolean[t] = True
+        for f in false_values:
+            replace_boolean[f] = False
 
-            # only remap columns that have values to be replaced
-            cols = [c for c in df.columns if c != 'geometry']
-            for c in cols:
-                if len(set(replace_boolean.keys()).intersection(set(df[c]))) > 0:
-                    df[c] = df[c].map(replace_boolean)
+        # only remap columns that have values to be replaced
+        cols = [c for c in df.columns if c != 'geometry']
+        for c in cols:
+            if len(set(replace_boolean.keys()).intersection(set(df[c]))) > 0:
+                df[c] = df[c].map(replace_boolean)
 
     return df
 
