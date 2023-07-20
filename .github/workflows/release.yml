@@ -46,13 +46,12 @@ jobs:
       run: |
         echo ${{ steps.get_version.outputs.version }}
 
-    - name: Install Conda environment using micromamba
-      uses: mamba-org/provision-with-micromamba@main
+    - name: Setup Micromamba
+      uses: mamba-org/setup-micromamba@v1
       with:
         environment-file: ci/requirements.yml
-        environment-name: gisutils_ci
+        cache-environment: true
         cache-downloads: true
-        cache-env: true
 
     - name: Conda info
       shell: bash -l {0}
