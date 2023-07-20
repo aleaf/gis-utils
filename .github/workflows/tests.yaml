@@ -15,10 +15,10 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        python-version: ['3.10', '3.9']
+        python-version: ['3.11', '3.10']
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       #with:
       #  fetch-depth: 50
     - name: Setup Micromamba
@@ -35,7 +35,7 @@ jobs:
 
     - name: Conda info
       shell: bash -l {0}
-      run: conda info
+      run: micromamba info
     - name: Install gis-utils and ipykernel
       shell: bash -l {0}
       run: |
@@ -43,7 +43,7 @@ jobs:
         python -m ipykernel install --user --name gisutils_ci --display-name "gisutils_ci"
     - name: Conda list
       shell: bash -l {0}
-      run: conda list
+      run: micromamba list
     #- name: Lint with flake8
     #  run: |
     #    # stop the build if there are Python syntax errors or undefined names

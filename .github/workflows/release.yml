@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -33,7 +33,7 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         persist-credentials: false
 
@@ -55,7 +55,7 @@ jobs:
 
     - name: Conda info
       shell: bash -l {0}
-      run: conda info
+      run: micromamba info
     - name: Install gis-utils and ipykernel
       shell: bash -l {0}
       run: |
@@ -63,7 +63,7 @@ jobs:
         python -m ipykernel install --user --name gisutils_ci --display-name "gisutils_ci"
     - name: Conda list
       shell: bash -l {0}
-      run: conda list
+      run: micromamba list
 
     - name: Run tests
       shell: bash -l {0}
@@ -89,7 +89,7 @@ jobs:
     needs: release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
       uses: actions/setup-python@v1
       with:
