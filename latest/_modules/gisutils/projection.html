@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.projection &mdash; gis-utils 0.3.5.post1+g7c78852 documentation</title>
+  <title>gisutils.projection &mdash; gis-utils 0.3.5.post1+g5f61a75 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -13,9 +13,6 @@
   <![endif]-->
   
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
         <script src="../../_static/clipboard.min.js"></script>
@@ -30,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> gis-utils
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gis-utils
           </a>
               <div class="version">
-                0.3.5.post1+g7c78852
+                0.3.5.post1+g5f61a75
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -65,7 +66,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
       <li class="breadcrumb-item active">gisutils.projection</li>
       <li class="wy-breadcrumbs-aside">
@@ -104,7 +105,7 @@
 
 
 <div class="viewcode-block" id="get_proj_str"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_proj_str">[docs]</a><span class="k">def</span> <span class="nf">get_proj_str</span><span class="p">(</span><span class="n">prjfile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the PROJ string from the well-known text in an ESRI projection file.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the PROJ string from the well-known text in an ESRI projection file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -135,7 +136,7 @@
 
 
 <div class="viewcode-block" id="get_shapefile_crs"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_shapefile_crs">[docs]</a><span class="k">def</span> <span class="nf">get_shapefile_crs</span><span class="p">(</span><span class="n">shapefile</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -161,7 +162,7 @@
         
 
 <div class="viewcode-block" id="project"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.project">[docs]</a><span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">projection1</span><span class="p">,</span> <span class="n">projection2</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reproject shapely geometry object(s) or scalar</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reproject shapely geometry object(s) or scalar</span>
 <span class="sd">    coodrinates to new coordinate system</span>
 
 <span class="sd">    Parameters</span>
@@ -189,7 +190,7 @@
     
     
 <span class="k">def</span> <span class="nf">_project</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">geom</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Performs the actual reprojection. Wrapped by</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs the actual reprojection. Wrapped by</span>
 <span class="sd">    :func:`gisutils.projection.project` to handle potential</span>
 <span class="sd">    SSL errors.</span>
 <span class="sd">    </span>
@@ -231,7 +232,7 @@
 
 
 <div class="viewcode-block" id="get_authority_crs"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_authority_crs">[docs]</a><span class="k">def</span> <span class="nf">get_authority_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Try to get the authority representation</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Try to get the authority representation</span>
 <span class="sd">    for a CRS, for more robust comparison with other CRS</span>
 <span class="sd">    objects.</span>
 
@@ -283,7 +284,7 @@
 <div class="viewcode-block" id="project_raster"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.project_raster">[docs]</a><span class="k">def</span> <span class="nf">project_raster</span><span class="p">(</span><span class="n">source_raster</span><span class="p">,</span> <span class="n">dest_raster</span><span class="p">,</span> <span class="n">dest_crs</span><span class="p">,</span>
                    <span class="n">resampling</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
                    <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GTiff&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Reproject a raster from one coordinate system to another using Rasterio</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reproject a raster from one coordinate system to another using Rasterio</span>
 <span class="sd">    code from: https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst</span>
 
 <span class="sd">    Parameters</span>
@@ -373,7 +374,7 @@
 
 
 <div class="viewcode-block" id="get_rasterio_crs"><a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_rasterio_crs">[docs]</a><span class="k">def</span> <span class="nf">get_rasterio_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns a rasterio.crs.CRS representation</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a rasterio.crs.CRS representation</span>
 <span class="sd">    of the input coordinate reference system.</span>
 
 <span class="sd">    Parameters</span>

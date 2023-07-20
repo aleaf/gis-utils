@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.raster &mdash; gis-utils 0.3.5.post1+g7c78852 documentation</title>
+  <title>gisutils.raster &mdash; gis-utils 0.3.5.post1+g5f61a75 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -13,9 +13,6 @@
   <![endif]-->
   
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
         <script src="../../_static/clipboard.min.js"></script>
@@ -30,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> gis-utils
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gis-utils
           </a>
               <div class="version">
-                0.3.5.post1+g7c78852
+                0.3.5.post1+g5f61a75
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -65,7 +66,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
       <li class="breadcrumb-item active">gisutils.raster</li>
       <li class="wy-breadcrumbs-aside">
@@ -107,7 +108,7 @@
 
 
 <div class="viewcode-block" id="get_transform"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_transform">[docs]</a><span class="k">def</span> <span class="nf">get_transform</span><span class="p">(</span><span class="n">xul</span><span class="p">,</span> <span class="n">yul</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns an affine.Affine instance that can be</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns an affine.Affine instance that can be</span>
 <span class="sd">    used to locate raster grids in space. See</span>
 <span class="sd">    https://www.perrygeo.com/python-affine-transforms.html</span>
 <span class="sd">    https://rasterio.readthedocs.io/en/stable/topics/migrating-to-v1.html</span>
@@ -138,7 +139,7 @@
 
 
 <div class="viewcode-block" id="get_raster_crs"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_raster_crs">[docs]</a><span class="k">def</span> <span class="nf">get_raster_crs</span><span class="p">(</span><span class="n">raster</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -163,7 +164,7 @@
                          <span class="n">xarray_variable</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">out_of_bounds_errors</span><span class="o">=</span><span class="s1">&#39;coerce&#39;</span><span class="p">,</span>
                          <span class="n">method</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span> <span class="n">size_thresh</span><span class="o">=</span><span class="mf">1e9</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get raster values single point or list of points. Points in</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get raster values single point or list of points. Points in</span>
 <span class="sd">    a different coordinate reference system (CRS) specified with a points_crs will be</span>
 <span class="sd">    reprojected to the raster CRS prior to sampling.</span>
 
@@ -353,7 +354,7 @@
                      <span class="n">data_col</span><span class="o">=</span><span class="s1">&#39;values&#39;</span><span class="p">,</span>
                      <span class="n">output_resolution</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
                      <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;surface.tif&#39;</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Interpolate point data to a regular grid using scipy.interpolate.griddata;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Interpolate point data to a regular grid using scipy.interpolate.griddata;</span>
 <span class="sd">    write results to a GeoTiff.</span>
 
 <span class="sd">    Parameters</span>
@@ -433,7 +434,7 @@
                  <span class="n">dx</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                  <span class="n">nodata</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Write a numpy array to Arc Ascii grid or shapefile with the model</span>
 <span class="sd">    reference.</span>
 
@@ -635,7 +636,7 @@
 
 <div class="viewcode-block" id="write_arc_ascii"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.write_arc_ascii">[docs]</a><span class="k">def</span> <span class="nf">write_arc_ascii</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">xll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">yll</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cellsize</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span>
                     <span class="n">nodata</span><span class="o">=-</span><span class="mi">9999</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write numpy array to Arc Ascii grid.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write numpy array to Arc Ascii grid.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -694,7 +695,7 @@
                 <span class="n">clip_features_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">clip_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                 <span class="n">project_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Clip raster to feature extent(s), write the output</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clip raster to feature extent(s), write the output</span>
 <span class="sd">    to a new raster file. If the feature extent(s) are in</span>
 <span class="sd">    a different coordinate reference system, the raster will first</span>
 <span class="sd">    be reprojected to that CRS and then clipped. The output raster</span>
@@ -789,7 +790,7 @@
 
 
 <span class="k">def</span> <span class="nf">_clip_raster</span><span class="p">(</span><span class="n">inraster</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">outraster</span><span class="p">,</span> <span class="n">clip_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Clips a raster to clip_features in the same coordinate</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clips a raster to clip_features in the same coordinate</span>
 <span class="sd">    reference system, write the output to a new raster file.</span>
 
 
@@ -842,7 +843,7 @@
 
 
 <div class="viewcode-block" id="get_feature_geojson"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_feature_geojson">[docs]</a><span class="k">def</span> <span class="nf">get_feature_geojson</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;convert input clip_features to list of clip_features in the</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;convert input clip_features to list of clip_features in the</span>
 <span class="sd">    geojson format.</span>
 
 <span class="sd">    Parameters</span>
@@ -896,7 +897,7 @@
 
 
 <div class="viewcode-block" id="get_geojson_collection_bounds"><a class="viewcode-back" href="../../api/gisutils.raster.html#gisutils.raster.get_geojson_collection_bounds">[docs]</a><span class="k">def</span> <span class="nf">get_geojson_collection_bounds</span><span class="p">(</span><span class="n">geojsoncollection</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Get the bounds for a collection of geojson clip_features.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the bounds for a collection of geojson clip_features.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.shapefile &mdash; gis-utils 0.3.5.post1+g7c78852 documentation</title>
+  <title>gisutils.shapefile &mdash; gis-utils 0.3.5.post1+g5f61a75 documentation</title>
       <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
@@ -13,9 +13,6 @@
   <![endif]-->
   
         <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/sphinx_highlight.js"></script>
         <script src="../../_static/clipboard.min.js"></script>
@@ -30,14 +27,18 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../index.html" class="icon icon-home"> gis-utils
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gis-utils
           </a>
               <div class="version">
-                0.3.5.post1+g7c78852
+                0.3.5.post1+g5f61a75
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
@@ -65,7 +66,7 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home"></a></li>
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
       <li class="breadcrumb-item active">gisutils.shapefile</li>
       <li class="wy-breadcrumbs-aside">
@@ -99,7 +100,7 @@
 <div class="viewcode-block" id="df2shp"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.df2shp">[docs]</a><span class="k">def</span> <span class="nf">df2shp</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">shpname</span><span class="p">,</span> <span class="n">geo_column</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
            <span class="n">retain_order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
            <span class="n">prj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Write a DataFrame with a column of shapely geometries to a shapefile.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a DataFrame with a column of shapely geometries to a shapefile.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -254,7 +255,7 @@
 <div class="viewcode-block" id="shp2df"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp2df">[docs]</a><span class="k">def</span> <span class="nf">shp2df</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clipto</span><span class="o">=</span><span class="p">[],</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">false_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">skip_empty_geom</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)</span>
 <span class="sd">     into pandas DataFrame.</span>
 
 <span class="sd">    Parameters</span>
