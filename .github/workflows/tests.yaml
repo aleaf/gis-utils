@@ -42,7 +42,7 @@ jobs:
         pip install git+https://github.com/aleaf/gis-utils@develop
         cd ..
         python -c "import gisutils"
-        cd gisutils
+        cd gis-utils
     - name: Install gis-utils and ipykernel
       shell: bash -l {0}
       run: |
