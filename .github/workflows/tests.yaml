@@ -36,6 +36,13 @@ jobs:
     - name: Conda info
       shell: bash -l {0}
       run: micromamba info
+    - name: Test install from git
+      shell: bash -l {0}
+      run: |
+        pip install git+https://github.com/aleaf/gis-utils@develop
+        cd ..
+        python -c "import gisutils"
+        cd gisutils
     - name: Install gis-utils and ipykernel
       shell: bash -l {0}
       run: |
