@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Troublehsooting &mdash; gis-utils 0.3.5.post3+g68c161a documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/plot_directive.css" type="text/css" />
-      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <title>Troublehsooting &mdash; gis-utils 0.3.5.post4+g217639a documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
+        <script src="_static/documentation_options.js?v=3f40d600"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -39,7 +38,7 @@
             gis-utils
           </a>
               <div class="version">
-                0.3.5.post3+g68c161a
+                0.3.5.post4+g217639a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -89,12 +88,12 @@
            <div itemprop="articleBody">
              
   <section id="troublehsooting">
-<h1>Troublehsooting<a class="headerlink" href="#troublehsooting" title="Permalink to this heading">¶</a></h1>
+<h1>Troublehsooting<a class="headerlink" href="#troublehsooting" title="Link to this heading">¶</a></h1>
 <section id="invalid-coordinate-transformations-inf-values-returned">
-<h2>Invalid coordinate transformations (‘inf’ values returned)<a class="headerlink" href="#invalid-coordinate-transformations-inf-values-returned" title="Permalink to this heading">¶</a></h2>
+<h2>Invalid coordinate transformations (‘inf’ values returned)<a class="headerlink" href="#invalid-coordinate-transformations-inf-values-returned" title="Link to this heading">¶</a></h2>
 <p>Often these are caused by mis-specified coordinate reference systems (CRS); for example a shapefile with coordinates in UTM but a projection file that specifies a geographic CRS. They can also be caused by a network error, however.</p>
 <section id="ssl-verification-as-the-cause-of-invalid-transformations">
-<h3>SSL verification as the cause of invalid transformations<a class="headerlink" href="#ssl-verification-as-the-cause-of-invalid-transformations" title="Permalink to this heading">¶</a></h3>
+<h3>SSL verification as the cause of invalid transformations<a class="headerlink" href="#ssl-verification-as-the-cause-of-invalid-transformations" title="Link to this heading">¶</a></h3>
 <p><strong>TL;DR: gis-utils attempts to resolve SSL errors if they are encountered</strong> by telling pyproj to find an SSL certificate bundle in your environmental variables, including <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code>. <strong>If you are still getting an SSL error</strong>, consider</p>
 <blockquote>
 <div><ul class="simple">
@@ -103,7 +102,7 @@
 </ul>
 </div></blockquote>
 <p>If pyproj doesn’t have the information it needs locally to make a transformation (i.e. especially for more obscure transformations), <a class="reference external" href="https://proj.org/usage/network.html">it will try to use its own version of libcurl to reach out to the web for additional files</a>, which it will then cache locally so that it doesn’t have to do this again. If you are on a network that requires SSL verification with a special certificate (i.e. the USGS Network), this will result in an SSL error unless the <cite>libcurl within pyproj</cite> is pointed to your certificate.</p>
-<p>By default, Pyproj uses the <a class="reference external" href="https://pypi.org/project/certifi/">certifi package</a> certificate bundle, which is located within the certifi install in your <code class="docutils literal notranslate"><span class="pre">site-packages</span></code> folder for your python distribution (you can see where by importing certifi (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">certifi</span></code>) and then <code class="docutils literal notranslate"><span class="pre">certifi.where()</span></code>). The certify bundle can be overridden in <code class="docutils literal notranslate"><span class="pre">pyproj</span></code> via the <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/network.html#pyproj.network.set_ca_bundle_path" title="(in pyproj v3.6.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyproj.network.set_ca_bundle_path()</span></code></a> function. A path to a specific certificate can be passed to this function, but it is perhaps more convenient to simply argue <code class="docutils literal notranslate"><span class="pre">False</span></code>, in which case pyproj will look at several system variables, including <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code>, for a certificate bundle. If you simply append your special certificate to a suitable existing bundle and then reference it in your environmental variables (e.g., in <code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code> or <code class="docutils literal notranslate"><span class="pre">~/.zshenv</span></code> as <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SSL_CERT_FILE=&lt;path</span> <span class="pre">to</span> <span class="pre">certificate&gt;</span></code>), then pyproj will find it with:</p>
+<p>By default, Pyproj uses the <a class="reference external" href="https://pypi.org/project/certifi/">certifi package</a> certificate bundle, which is located within the certifi install in your <code class="docutils literal notranslate"><span class="pre">site-packages</span></code> folder for your python distribution (you can see where by importing certifi (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">certifi</span></code>) and then <code class="docutils literal notranslate"><span class="pre">certifi.where()</span></code>). The certify bundle can be overridden in <code class="docutils literal notranslate"><span class="pre">pyproj</span></code> via the <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/network.html#pyproj.network.set_ca_bundle_path" title="(in pyproj v3.6.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">pyproj.network.set_ca_bundle_path()</span></code></a> function. A path to a specific certificate can be passed to this function, but it is perhaps more convenient to simply argue <code class="docutils literal notranslate"><span class="pre">False</span></code>, in which case pyproj will look at several system variables, including <code class="docutils literal notranslate"><span class="pre">SSL_CERT_FILE</span></code>, for a certificate bundle. If you simply append your special certificate to a suitable existing bundle and then reference it in your environmental variables (e.g., in <code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code> or <code class="docutils literal notranslate"><span class="pre">~/.zshenv</span></code> as <code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">SSL_CERT_FILE=&lt;path</span> <span class="pre">to</span> <span class="pre">certificate&gt;</span></code>), then pyproj will find it with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pyproj</span><span class="o">.</span><span class="n">network</span><span class="o">.</span><span class="n">set_ca_bundle_path</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>

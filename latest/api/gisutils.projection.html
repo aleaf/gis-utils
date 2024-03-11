@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.projection module &mdash; gis-utils 0.3.5.post3+g68c161a documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/plot_directive.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+  <title>gisutils.projection module &mdash; gis-utils 0.3.5.post4+g217639a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/sphinx_highlight.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/documentation_options.js?v=3f40d600"></script>
+        <script src="../_static/doctools.js?v=888ff710"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -40,7 +39,7 @@
             gis-utils
           </a>
               <div class="version">
-                0.3.5.post3+g68c161a
+                0.3.5.post4+g217639a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -102,16 +101,16 @@
            <div itemprop="articleBody">
              
   <section id="module-gisutils.projection">
-<span id="gisutils-projection-module"></span><h1>gisutils.projection module<a class="headerlink" href="#module-gisutils.projection" title="Permalink to this heading">¶</a></h1>
+<span id="gisutils-projection-module"></span><h1>gisutils.projection module<a class="headerlink" href="#module-gisutils.projection" title="Link to this heading">¶</a></h1>
 <p>Functions for working with coordinate reference systems and projections.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.get_authority_crs">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_authority_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_authority_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_authority_crs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_authority_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_authority_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_authority_crs" title="Link to this definition">¶</a></dt>
 <dd><p>Try to get the authority representation
 for a CRS, for more robust comparison with other CRS
 objects.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><strong>crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
 passed to the pyproj.crs.from_user_input
@@ -128,23 +127,23 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>authority_crs</strong><span class="classifier">pyproj.crs.CRS instance</span></dt><dd><p>CRS instance initiallized with the name
 and authority code (e.g. epsg: 5070) produced by
-<a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.6.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a></p>
+<a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.6.1)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a></p>
 </dd>
 </dl>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
-<p><a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.6.0)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a> will return None if a matching
+<p><a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS.to_authority" title="(in pyproj v3.6.1)"><code class="xref py py-meth docutils literal notranslate"><span class="pre">pyproj.crs.CRS.to_authority()</span></code></a> will return None if a matching
 authority name and code can’t be found. In this case,
 the input crs instance will be returned.</p>
 <p class="rubric">References</p>
@@ -153,16 +152,16 @@ the input crs instance will be returned.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.get_proj_str">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_proj_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prjfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_proj_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_proj_str" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_proj_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">prjfile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_proj_str"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_proj_str" title="Link to this definition">¶</a></dt>
 <dd><p>Get the PROJ string from the well-known text in an ESRI projection file.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>prjfile</strong><span class="classifier">string (filepath)</span></dt><dd><p>ESRI Shapefile or projection file</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl>
 <dt><strong>proj_str</strong><span class="classifier">string (<a class="reference external" href="http://trac.osgeo.org/proj/">http://trac.osgeo.org/proj/</a>)</span></dt><dd></dd>
 </dl>
@@ -170,10 +169,10 @@ the input crs instance will be returned.</p>
 </dl>
 <p class="rubric">Notes</p>
 <p>PROJ strings can be lossy and are no longer recommended as a way
-to store coordinate reference system (CRS) information. The pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a>
+to store coordinate reference system (CRS) information. The pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a>
 class provides an improved way to represent CRS in memory; the gisutils
 <a class="reference internal" href="#gisutils.projection.get_authority_crs" title="gisutils.projection.get_authority_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_authority_crs()</span></code></a> and <a class="reference internal" href="#gisutils.projection.get_shapefile_crs" title="gisutils.projection.get_shapefile_crs"><code class="xref py py-func docutils literal notranslate"><span class="pre">get_shapefile_crs()</span></code></a> functions return 
-pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> instances and are therefore preferred 
+pyproj <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">CRS</span></code></a> instances and are therefore preferred 
 over this function.</p>
 <p class="rubric">References</p>
 <p><a class="reference external" href="https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS">https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS</a>
@@ -182,11 +181,11 @@ over this function.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.get_rasterio_crs">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_rasterio_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_rasterio_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_rasterio_crs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_rasterio_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_rasterio_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_rasterio_crs" title="Link to this definition">¶</a></dt>
 <dd><p>Returns a rasterio.crs.CRS representation
 of the input coordinate reference system.</p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><strong>crs</strong><span class="classifier">obj</span></dt><dd><p>A Python int, dict, str, or pyproj.crs.CRS instance
 passed to the pyproj.crs.from_user_input
@@ -203,13 +202,13 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>rasterio_crs</strong><span class="classifier">rasterio.crs.CRS instance</span></dt><dd></dd>
 </dl>
@@ -219,16 +218,16 @@ Can be any of:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.get_shapefile_crs">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_shapefile_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_shapefile_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_shapefile_crs" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">get_shapefile_crs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefile</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#get_shapefile_crs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.get_shapefile_crs" title="Link to this definition">¶</a></dt>
 <dd><p>Get the coordinate reference system for a shapefile.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>shapefile</strong><span class="classifier">str</span></dt><dd><p>Path to a shapefile</p>
 </dd>
 </dl>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><dl class="simple">
 <dt><strong>crs</strong><span class="classifier">pyproj.CRS instance</span></dt><dd></dd>
 </dl>
@@ -238,11 +237,11 @@ Can be any of:</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.project">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.project" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">project</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#project"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.project" title="Link to this definition">¶</a></dt>
 <dd><p>Reproject shapely geometry object(s) or scalar
 coodrinates to new coordinate system</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl class="simple">
 <dt><strong>geom: shapely geometry object, list of shapely geometry objects,</strong></dt><dd><p>list of (x, y) tuples, or (x, y) tuple.</p>
 </dd>
@@ -257,11 +256,11 @@ coodrinates to new coordinate system</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gisutils.projection.project_raster">
-<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">project_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_raster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_raster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTiff'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#project_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.project_raster" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">gisutils.projection.</span></span><span class="sig-name descname"><span class="pre">project_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_raster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_raster</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_crs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">driver</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'GTiff'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gisutils/projection.html#project_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gisutils.projection.project_raster" title="Link to this definition">¶</a></dt>
 <dd><p>Reproject a raster from one coordinate system to another using Rasterio
 code from: <a class="reference external" href="https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst">https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst</a></p>
 <dl class="field-list">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><dl>
 <dt><strong>source_raster</strong><span class="classifier">str</span></dt><dd><p>Filename of source raster.</p>
 </dd>
@@ -283,7 +282,7 @@ Can be any of:</p>
 <li><p>An EPSG integer code [i.e. 4326]</p></li>
 <li><p>A tuple of (“auth_name”: “auth_code”) [i.e (‘epsg’, ‘4326’)]</p></li>
 <li><p>An object with a <cite>to_wkt</cite> method.</p></li>
-<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
+<li><p>A <a class="reference external" href="https://pyproj4.github.io/pyproj/stable/api/crs/crs.html#pyproj.crs.CRS" title="(in pyproj v3.6.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pyproj.crs.CRS</span></code></a> class</p></li>
 </ul>
 </div></blockquote>
 </dd>

@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.shapefile &mdash; gis-utils 0.3.5.post3+g68c161a documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/plot_directive.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+  <title>gisutils.shapefile &mdash; gis-utils 0.3.5.post4+g217639a documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/sphinx_highlight.js"></script>
-        <script src="../../_static/clipboard.min.js"></script>
-        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/documentation_options.js?v=3f40d600"></script>
+        <script src="../../_static/doctools.js?v=888ff710"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -37,7 +36,7 @@
             gis-utils
           </a>
               <div class="version">
-                0.3.5.post3+g68c161a
+                0.3.5.post4+g217639a
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -100,7 +99,9 @@
 <span class="kn">from</span> <span class="nn">gisutils.utils</span> <span class="kn">import</span> <span class="n">is_sequence</span>
 
 
-<div class="viewcode-block" id="df2shp"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.df2shp">[docs]</a><span class="k">def</span> <span class="nf">df2shp</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">shpname</span><span class="p">,</span> <span class="n">geo_column</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<div class="viewcode-block" id="df2shp">
+<a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.df2shp">[docs]</a>
+<span class="k">def</span> <span class="nf">df2shp</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">shpname</span><span class="p">,</span> <span class="n">geo_column</span><span class="o">=</span><span class="s1">&#39;geometry&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
            <span class="n">retain_order</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
            <span class="n">prj</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">epsg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">proj_str</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">crs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write a DataFrame with a column of shapely geometries to a shapefile.</span>
@@ -236,7 +237,10 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39; Done&#39;</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rename_fields_to_10_characters"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.rename_fields_to_10_characters">[docs]</a><span class="k">def</span> <span class="nf">rename_fields_to_10_characters</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+<div class="viewcode-block" id="rename_fields_to_10_characters">
+<a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.rename_fields_to_10_characters">[docs]</a>
+<span class="k">def</span> <span class="nf">rename_fields_to_10_characters</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">columns</span><span class="p">))</span>  <span class="c1"># convert columns to strings in case some are ints</span>
     <span class="n">newfields</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="p">(</span><span class="n">fields</span><span class="p">):</span>
@@ -255,7 +259,10 @@
     <span class="k">return</span> <span class="n">newfields</span></div>
 
 
-<div class="viewcode-block" id="shp2df"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp2df">[docs]</a><span class="k">def</span> <span class="nf">shp2df</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clipto</span><span class="o">=</span><span class="p">[],</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="shp2df">
+<a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp2df">[docs]</a>
+<span class="k">def</span> <span class="nf">shp2df</span><span class="p">(</span><span class="n">shplist</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clipto</span><span class="o">=</span><span class="p">[],</span> <span class="nb">filter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">false_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dest_crs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
            <span class="n">skip_empty_geom</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read shapefile/DBF, list of shapefiles/DBFs, or File geodatabase (GDB)</span>
@@ -432,7 +439,10 @@
     <span class="k">return</span> <span class="n">df</span></div>
 
 
-<div class="viewcode-block" id="shp_properties"><a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp_properties">[docs]</a><span class="k">def</span> <span class="nf">shp_properties</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
+
+<div class="viewcode-block" id="shp_properties">
+<a class="viewcode-back" href="../../api/gisutils.shapefile.html#gisutils.shapefile.shp_properties">[docs]</a>
+<span class="k">def</span> <span class="nf">shp_properties</span><span class="p">(</span><span class="n">df</span><span class="p">):</span>
 
     <span class="n">newdtypes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bool&#39;</span><span class="p">:</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span>
                  <span class="s1">&#39;object&#39;</span><span class="p">:</span> <span class="s1">&#39;str&#39;</span><span class="p">,</span>
@@ -460,6 +470,7 @@
               <span class="k">else</span> <span class="n">df</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">]</span>
     <span class="n">properties</span> <span class="o">=</span> <span class="n">collections</span><span class="o">.</span><span class="n">OrderedDict</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">columns</span><span class="p">,</span> <span class="n">dtypes</span><span class="p">)))</span>
     <span class="k">return</span> <span class="n">properties</span></div>
+
 
 
 
