@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.3.6 (2024-10-11)
+--------------------------
+* bug fix to get_values_at_points() to address breaking rasterio or gdal change where dataset.index() no longer accepts arrays for x and y
+
 Version 0.3.5 (2023-07-19)
 --------------------------
 * bug fix (shp2df): replace ``DataFrame.append()`` call with ``pandas.concat`` for compatibility with ``pandas>=2.0``.
