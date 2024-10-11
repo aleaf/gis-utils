@@ -24,7 +24,7 @@ dependencies:
 - coverage
 - flake8
 - pytest
-- sphinx
+- sphinx>7
 - numpydoc
 - sphinx-copybutton
 - sphinx_rtd_theme
