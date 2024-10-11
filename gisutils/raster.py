@@ -224,7 +224,10 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         if data is None:
             pass
         elif method == 'nearest':
-            i, j = src.index(x, y)
+            try:
+                i, j = src.index(x, y)
+            except:
+                i, j = zip(*[src.index(xi, yi) for xi, yi in zip(x, y)])
             i = np.atleast_1d(np.array(i, dtype=int))
             j = np.atleast_1d(np.array(j, dtype=int))
             nrow, ncol = data.shape
