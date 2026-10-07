@@ -2,6 +2,10 @@
 Release History
 ===============
 
+Version 0.3.7 (2026-10-07)
+--------------------------
+* various patches for deprecations and warnings
+
 Version 0.3.6 (2024-10-11)
 --------------------------
 * bug fix to get_values_at_points() to address breaking rasterio or gdal change where dataset.index() no longer accepts arrays for x and y
