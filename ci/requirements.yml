@@ -1,6 +1,7 @@
 name: gisutils_ci
 channels:
 - conda-forge
+- nodefaults
 dependencies:
 - python
 - ipython

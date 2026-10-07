@@ -1,7 +1,7 @@
 """
 Functions for working with shapefiles.
 """
-from distutils.version import LooseVersion
+from packaging.version import Version
 import warnings
 from pathlib import Path
 import os
@@ -114,7 +114,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     if crs is not None:
         proj_crs = get_authority_crs(crs)
         # https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona
-        if LooseVersion(fiona.__gdal_version__) < LooseVersion("3.0.0"):
+        if Version(fiona.__gdal_version__) < Version("3.0.0"):
             crs_wkt = proj_crs.to_wkt(WktVersion.WKT1_GDAL)
         else:
             # GDAL 3+ can use WKT2
