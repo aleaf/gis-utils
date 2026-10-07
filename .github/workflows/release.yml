@@ -1,29 +1,46 @@
 name: Publish release
-
 on:
   push:
-    # Sequence of patterns matched against refs/tags
-    tags:
-      - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+    branches:
+      - master
+      # branchname trigger if we had the ability to auto-prep release PRs
+      #- v[0-9]+.[0-9]+.[0-9]+*
+  release:
+    types:
+      - published
 
 jobs:
+
   release:
     name: Create Release
+    # runs only when changes are merged to master
+    if: ${{ github.event_name == 'push' && github.ref_name == 'master' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      - name: Checkout master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          release_name: gis-utils ${{ steps.tag_version.outputs.new_tag }}
           body: |
             Changes in this Release:
-          draft: false
+            ${{ steps.tag_version.outputs.changelog }}
+          draft: true
           prerelease: false
 
   docs:
@@ -33,9 +50,11 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         persist-credentials: false
+        ref: master
+        fetch-tags: true
 
     - name: Get latest release version number
       id: get_version
@@ -47,11 +66,11 @@ jobs:
         echo ${{ steps.get_version.outputs.version }}
 
     - name: Setup Micromamba
-      uses: mamba-org/setup-micromamba@v1
+      uses: mamba-org/setup-micromamba@v2
       with:
         environment-file: ci/requirements.yml
-        cache-environment: true
-        cache-downloads: true
+        cache-environment: false
+        cache-downloads: false
 
     - name: Conda info
       shell: bash -l {0}
@@ -77,7 +96,7 @@ jobs:
         make -C docs html
 
     - name: Deploy 🚀
-      uses: JamesIves/github-pages-deploy-action@3.7.1
+      uses: JamesIves/github-pages-deploy-action@v4.7.2
       with:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         BRANCH: gh-pages
@@ -85,23 +104,50 @@ jobs:
         CLEAN: false
         TARGET_FOLDER: ${{ steps.get_version.outputs.version }}
 
-  deploy:
-    needs: release
+  publish:
+    name: Publish package
+    # runs only after release is published (manually promoted from draft)
+    # (allows editing of release notes, etc.)
+    if: ${{ github.event_name == 'release' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      id-token: write  # mandatory for trusted publishing
+    environment:  # requires a 'release' environment in repo settings
+      name: release
+      url: https://pypi.org/p/gis-utils
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ secrets.GISUTILS_PYPI_TOKEN }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload dist/*
+
+      - name: Checkout master branch
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-tags: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+          cache-dependency-path: pyproject.toml
+
+      - name: Install Python dependencies
+        run: |
+          pip install --upgrade pip
+          pip install build twine
+
+      - name: Build package
+        run: python -m build
+
+      - name: Check package
+        run: twine check --strict dist/*
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

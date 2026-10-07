@@ -5,8 +5,28 @@ from pathlib import Path
 import warnings
 from functools import partial
 import numpy as np
-from shapely.ops import transform
+import shapely
+from shapely.ops import transform as ops_transform
 from shapely.geometry.base import BaseMultipartGeometry
+
+# shapely 2.0+ provides shapely.transform (array-based);
+# shapely.ops.transform (func-based) is deprecated in 2.x
+_HAS_SHAPELY_TRANSFORM = hasattr(shapely, "transform")
+
+
+def _transform_geom(geom, transformer):
+    """Reproject a single shapely geometry using a pyproj Transformer,
+    preferring the array-based ``shapely.transform`` (shapely 2.0+) and
+    falling back to the deprecated ``shapely.ops.transform`` otherwise.
+    """
+    if _HAS_SHAPELY_TRANSFORM:
+        def _apply(coords):
+            x, y = transformer.transform(coords[:, 0], coords[:, 1],
+                                         errcheck=True)
+            return np.column_stack([x, y])
+        return shapely.transform(geom, _apply)
+    project = partial(transformer.transform, errcheck=True)
+    return ops_transform(project, geom)
 try:
     import rasterio
 except:
@@ -143,12 +163,10 @@ def _project(transformer, geom):
         y = a[:, 1]
         return transformer.transform(x, y, errcheck=True)
 
-    project = partial(transformer.transform, errcheck=True)
-
     # do the transformation!
     if is_sequence(geom) and not isinstance(geom, BaseMultipartGeometry):
-        return [transform(project, g) for g in geom]
-    return transform(project, geom)
+        return [_transform_geom(g, transformer) for g in geom]
+    return _transform_geom(geom, transformer)
 
 
 def get_authority_crs(crs):

@@ -54,7 +54,7 @@ def get_transform(xul, yul, dx, dy=None, rotation=0.):
     if dy is None:
         dy = -dx
     return Affine(dx, 0., xul,
-                  0., dy, yul) * \
+                  0., dy, yul) @ \
            Affine.rotation(rotation)
 
 
@@ -244,7 +244,7 @@ def get_values_at_points(rasterfile, x=None, y=None, band=1,
         else:
             # map the points to interpolate to onto the raster coordinate system
             # (in case the raster is rotated)
-            x_rx, y_ry = ~src.transform * (x, y)
+            x_rx, y_ry = ~src.transform @ (x, y)
             # coordinates of raster pixel centers in raster coordinate system
             # (e.g. i,j = 0, 0 = 0.5, 0.5)
             pad = 0.5  # extra padding, in pixels, so that points within the outer pixels are still counted
@@ -320,7 +320,7 @@ def points_to_raster(points_shapefiles, nodata_value=-99,
         dest_crs = get_shapefile_crs(points_shapefiles)
 
     # reshape the values column to a nrow x ncol array; convert invalid values to nans
-    data = df[data_col].values
+    data = df[data_col].to_numpy(copy=True)
     data[data == nodata_value] = np.nan
 
     # coordinates for the orignal grid (aligned with NHG cell corners)

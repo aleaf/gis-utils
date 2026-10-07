@@ -1,7 +1,7 @@
 """
 Functions for working with shapefiles.
 """
-from distutils.version import LooseVersion
+from packaging.version import Version
 import warnings
 from pathlib import Path
 import os
@@ -114,7 +114,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     if crs is not None:
         proj_crs = get_authority_crs(crs)
         # https://pyproj4.github.io/pyproj/stable/crs_compatibility.html#converting-from-pyproj-crs-crs-for-fiona
-        if LooseVersion(fiona.__gdal_version__) < LooseVersion("3.0.0"):
+        if Version(fiona.__gdal_version__) < Version("3.0.0"):
             crs_wkt = proj_crs.to_wkt(WktVersion.WKT1_GDAL)
         else:
             # GDAL 3+ can use WKT2
@@ -126,7 +126,7 @@ def df2shp(dataframe, shpname, geo_column='geometry', index=False,
     if Type != 'None':
         for g in df.geometry:
             try:
-                Type = g.type
+                Type = g.geom_type
             except:
                 continue
         mapped = [mapping(g) for g in df.geometry]
@@ -267,14 +267,14 @@ def shp2df(shplist, index=None, index_dtype=None, clipto=[], filter=None,
                     print('filtering on bounding box {}, {}, {}, {}...'.format(*filter))
                 if clip:  # limit what is brought in to items in index of clipto
                     for line in shp_obj.filter(bbox=filter):
-                        props = line['properties']
+                        props = dict(line['properties'])
                         if not props[index] in clipto:
                             continue
                         props['geometry'] = line.get('geometry', None)
                         attributes.append(props)
                 else:
                     for line in shp_obj.filter(bbox=filter):
-                        props = line['properties']
+                        props = dict(line['properties'])
                         props['geometry'] = line.get('geometry', None)
                         attributes.append(props)
                 print('--> building dataframe... (may take a while for large shapefiles)')
