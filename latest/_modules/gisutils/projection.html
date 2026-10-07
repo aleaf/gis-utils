@@ -1,24 +1,24 @@
+
+
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gisutils.projection &mdash; gis-utils 0.3.6.post2+gf6148f9 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
-      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+  <title>gisutils.projection &mdash; gis-utils 0.3.7.post1+gc9869b5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
 
   
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
-  
-        <script src="../../_static/documentation_options.js?v=4184f962"></script>
-        <script src="../../_static/doctools.js?v=9a2dae69"></script>
-        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
-        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
-        <script src="../../_static/copybutton.js?v=f281be69"></script>
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=9598e9b4"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -35,9 +35,6 @@
           <a href="../../index.html" class="icon icon-home">
             gis-utils
           </a>
-              <div class="version">
-                0.3.6.post2+gf6148f9
-              </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
     <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
@@ -80,36 +77,56 @@
            <div itemprop="articleBody">
              
   <h1>Source code for gisutils.projection</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">"""</span>
 <span class="sd">Functions for working with coordinate reference systems and projections.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">warnings</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">shapely.ops</span> <span class="kn">import</span> <span class="n">transform</span>
-<span class="kn">from</span> <span class="nn">shapely.geometry.base</span> <span class="kn">import</span> <span class="n">BaseMultipartGeometry</span>
+<span class="sd">"""</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shapely</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.ops</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">ops_transform</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMultipartGeometry</span>
+
+<span class="c1"># shapely 2.0+ provides shapely.transform (array-based);</span>
+<span class="c1"># shapely.ops.transform (func-based) is deprecated in 2.x</span>
+<span class="n">_HAS_SHAPELY_TRANSFORM</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">shapely</span><span class="p">,</span> <span class="s2">"transform"</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_transform_geom</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">transformer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reproject a single shapely geometry using a pyproj Transformer,</span>
+<span class="sd">    preferring the array-based ``shapely.transform`` (shapely 2.0+) and</span>
+<span class="sd">    falling back to the deprecated ``shapely.ops.transform`` otherwise.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">_HAS_SHAPELY_TRANSFORM</span><span class="p">:</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">_apply</span><span class="p">(</span><span class="n">coords</span><span class="p">):</span>
+            <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">coords</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">coords</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span>
+                                         <span class="n">errcheck</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">shapely</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">_apply</span><span class="p">)</span>
+    <span class="n">project</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">errcheck</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ops_transform</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">geom</span><span class="p">)</span>
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">rasterio</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">rasterio</span>
 <span class="k">except</span><span class="p">:</span>
     <span class="n">rasterio</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="kn">import</span> <span class="nn">pyproj</span>
-<span class="kn">from</span> <span class="nn">gisutils.utils</span> <span class="kn">import</span> <span class="n">is_sequence</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pyproj</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">gisutils.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">is_sequence</span>
 
 
-<span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;project&#39;</span><span class="p">:</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;The &#39;project&#39; module was renamed to &#39;projection&#39; &quot;</span>
-                      <span class="s2">&quot;to avoid confusion with the project() function.&quot;</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="fm">__getattr__</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">'project'</span><span class="p">:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"The 'project' module was renamed to 'projection' "</span>
+                      <span class="s2">"to avoid confusion with the project() function."</span><span class="p">,</span>
                       <span class="ne">DeprecationWarning</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">project</span>
-    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No module named &#39;</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">'No module named '</span> <span class="o">+</span> <span class="n">name</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_proj_str">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_proj_str">[docs]</a>
-<span class="k">def</span> <span class="nf">get_proj_str</span><span class="p">(</span><span class="n">prjfile</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the PROJ string from the well-known text in an ESRI projection file.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_proj_str</span><span class="p">(</span><span class="n">prjfile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Get the PROJ string from the well-known text in an ESRI projection file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -134,7 +151,7 @@
 <span class="sd">    https://pyproj4.github.io/pyproj/dev/api/crs/crs.html#pyproj.crs.CRS</span>
 <span class="sd">    https://pyproj4.github.io/pyproj/dev/gotchas.html#what-are-the-best-formats-to-store-the-crs-information</span>
 <span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">crs</span> <span class="o">=</span> <span class="n">get_shapefile_crs</span><span class="p">(</span><span class="n">prjfile</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">crs</span><span class="o">.</span><span class="n">to_proj4</span><span class="p">()</span></div>
 
@@ -142,8 +159,8 @@
 
 <div class="viewcode-block" id="get_shapefile_crs">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_shapefile_crs">[docs]</a>
-<span class="k">def</span> <span class="nf">get_shapefile_crs</span><span class="p">(</span><span class="n">shapefile</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the coordinate reference system for a shapefile.</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_shapefile_crs</span><span class="p">(</span><span class="n">shapefile</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Get the coordinate reference system for a shapefile.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -154,13 +171,13 @@
 <span class="sd">    -------</span>
 <span class="sd">    crs : pyproj.CRS instance</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shapefile</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> \
             <span class="n">is_sequence</span><span class="p">(</span><span class="n">shapefile</span><span class="p">):</span>
         <span class="n">shapefile</span> <span class="o">=</span> <span class="n">shapefile</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">shapefile</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">shapefile</span><span class="p">)</span>
 
-    <span class="n">prjfile</span> <span class="o">=</span> <span class="n">shapefile</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">&#39;.prj&#39;</span><span class="p">)</span>
+    <span class="n">prjfile</span> <span class="o">=</span> <span class="n">shapefile</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s1">'.prj'</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">prjfile</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">prjfile</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
             <span class="n">wkt</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
@@ -171,8 +188,8 @@
 
 <div class="viewcode-block" id="project">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.project">[docs]</a>
-<span class="k">def</span> <span class="nf">project</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">projection1</span><span class="p">,</span> <span class="n">projection2</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reproject shapely geometry object(s) or scalar</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">projection1</span><span class="p">,</span> <span class="n">projection2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reproject shapely geometry object(s) or scalar</span>
 <span class="sd">    coodrinates to new coordinate system</span>
 
 <span class="sd">    Parameters</span>
@@ -183,7 +200,7 @@
 <span class="sd">        Proj4 string specifying source projection</span>
 <span class="sd">    projection2: string</span>
 <span class="sd">        Proj4 string specifying destination projection</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">transformer</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">Transformer</span><span class="o">.</span><span class="n">from_crs</span><span class="p">(</span><span class="n">projection1</span><span class="p">,</span> 
                                               <span class="n">projection2</span><span class="p">,</span> <span class="n">always_xy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">try</span><span class="p">:</span>
@@ -200,12 +217,12 @@
 
     
     
-<span class="k">def</span> <span class="nf">_project</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">geom</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs the actual reprojection. Wrapped by</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_project</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">geom</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Performs the actual reprojection. Wrapped by</span>
 <span class="sd">    :func:`gisutils.projection.project` to handle potential</span>
 <span class="sd">    SSL errors.</span>
 <span class="sd">    </span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="c1"># pyproj 2 style</span>
     <span class="c1"># https://pyproj4.github.io/pyproj/dev/gotchas.html</span>
     <span class="c1">#transformer = pyproj.Transformer.from_crs(projection1, projection2, always_xy=True)</span>
@@ -222,7 +239,7 @@
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">BaseMultipartGeometry</span><span class="p">):</span>
         <span class="n">geom0</span> <span class="o">=</span> <span class="n">geom</span>
     <span class="k">elif</span> <span class="n">is_sequence</span><span class="p">(</span><span class="n">geom</span><span class="p">):</span>
-        <span class="n">geom</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span> <span class="c1"># in case it&#39;s a generator</span>
+        <span class="n">geom</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span> <span class="c1"># in case it's a generator</span>
         <span class="n">geom0</span> <span class="o">=</span> <span class="n">geom</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">geom0</span> <span class="o">=</span> <span class="n">geom</span>
@@ -234,18 +251,16 @@
         <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">errcheck</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-    <span class="n">project</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="n">transformer</span><span class="o">.</span><span class="n">transform</span><span class="p">,</span> <span class="n">errcheck</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
     <span class="c1"># do the transformation!</span>
     <span class="k">if</span> <span class="n">is_sequence</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">BaseMultipartGeometry</span><span class="p">):</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">transform</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">g</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">geom</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">transform</span><span class="p">(</span><span class="n">project</span><span class="p">,</span> <span class="n">geom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">_transform_geom</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">transformer</span><span class="p">)</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">geom</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_transform_geom</span><span class="p">(</span><span class="n">geom</span><span class="p">,</span> <span class="n">transformer</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="get_authority_crs">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_authority_crs">[docs]</a>
-<span class="k">def</span> <span class="nf">get_authority_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Try to get the authority representation</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_authority_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Try to get the authority representation</span>
 <span class="sd">    for a CRS, for more robust comparison with other CRS</span>
 <span class="sd">    objects.</span>
 
@@ -262,9 +277,9 @@
 <span class="sd">          - PROJ keyword arguments for parameters</span>
 <span class="sd">          - JSON string with PROJ parameters</span>
 <span class="sd">          - CRS WKT string</span>
-<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An authority string [i.e. 'epsg:4326']</span>
 <span class="sd">          - An EPSG integer code [i.e. 4326]</span>
-<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]</span>
 <span class="sd">          - An object with a `to_wkt` method.</span>
 <span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
 <span class="sd">          </span>
@@ -278,14 +293,14 @@
 <span class="sd">    Notes</span>
 <span class="sd">    -----</span>
 <span class="sd">    :meth:`pyproj.crs.CRS.to_authority` will return None if a matching</span>
-<span class="sd">    authority name and code can&#39;t be found. In this case,</span>
+<span class="sd">    authority name and code can't be found. In this case,</span>
 <span class="sd">    the input crs instance will be returned.</span>
 
 <span class="sd">    References</span>
 <span class="sd">    ----------</span>
 <span class="sd">    http://pyproj4.github.io/pyproj/stable/api/crs/crs.html</span>
 
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">crs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">crs</span> <span class="o">=</span> <span class="n">pyproj</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
         <span class="n">authority</span> <span class="o">=</span> <span class="n">crs</span><span class="o">.</span><span class="n">to_authority</span><span class="p">()</span>
@@ -297,10 +312,10 @@
 
 <div class="viewcode-block" id="project_raster">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.project_raster">[docs]</a>
-<span class="k">def</span> <span class="nf">project_raster</span><span class="p">(</span><span class="n">source_raster</span><span class="p">,</span> <span class="n">dest_raster</span><span class="p">,</span> <span class="n">dest_crs</span><span class="p">,</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">project_raster</span><span class="p">(</span><span class="n">source_raster</span><span class="p">,</span> <span class="n">dest_raster</span><span class="p">,</span> <span class="n">dest_crs</span><span class="p">,</span>
                    <span class="n">resampling</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num_threads</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
-                   <span class="n">driver</span><span class="o">=</span><span class="s1">&#39;GTiff&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reproject a raster from one coordinate system to another using Rasterio</span>
+                   <span class="n">driver</span><span class="o">=</span><span class="s1">'GTiff'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Reproject a raster from one coordinate system to another using Rasterio</span>
 <span class="sd">    code from: https://github.com/mapbox/rasterio/blob/master/docs/reproject.rst</span>
 
 <span class="sd">    Parameters</span>
@@ -309,7 +324,7 @@
 <span class="sd">        Filename of source raster.</span>
 <span class="sd">    dest_raster : str</span>
 <span class="sd">        Filename of reprojected (destination) raster. Extension of filename should</span>
-<span class="sd">        match the driver (e.g., &#39;.tif&#39; for GeoTIFF)</span>
+<span class="sd">        match the driver (e.g., '.tif' for GeoTIFF)</span>
 <span class="sd">    dest_crs : obj</span>
 <span class="sd">        A Python int, dict, str, or pyproj.crs.CRS instance</span>
 <span class="sd">        passed to the pyproj.crs.from_user_input</span>
@@ -321,9 +336,9 @@
 <span class="sd">          - PROJ keyword arguments for parameters</span>
 <span class="sd">          - JSON string with PROJ parameters</span>
 <span class="sd">          - CRS WKT string</span>
-<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An authority string [i.e. 'epsg:4326']</span>
 <span class="sd">          - An EPSG integer code [i.e. 4326]</span>
-<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]</span>
 <span class="sd">          - An object with a `to_wkt` method.</span>
 <span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
 <span class="sd">          </span>
@@ -350,32 +365,32 @@
 <span class="sd">        GDAL driver/format to use for writing dst_raster. Default is GeoTIFF.</span>
 <span class="sd">    **kwargs : dict</span>
 <span class="sd">        Keyword arguments to :meth:`rasterio.open` for writing the output raster.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
-    <span class="kn">from</span> <span class="nn">rasterio.warp</span> <span class="kn">import</span> <span class="n">calculate_default_transform</span><span class="p">,</span> <span class="n">reproject</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">'This function requires rasterio. Please conda install rasterio.'</span><span class="p">)</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">rasterio.warp</span><span class="w"> </span><span class="kn">import</span> <span class="n">calculate_default_transform</span><span class="p">,</span> <span class="n">reproject</span>
 
     <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">source_raster</span><span class="p">)</span> <span class="k">as</span> <span class="n">src</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;reprojecting </span><span class="si">{}</span><span class="s1">...</span><span class="se">\n</span><span class="s1">from:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">, res: </span><span class="si">{:.2e}</span><span class="s1">, </span><span class="si">{:.2e}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">'reprojecting </span><span class="si">{}</span><span class="s1">...</span><span class="se">\n</span><span class="s1">from:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">, res: </span><span class="si">{:.2e}</span><span class="s1">, </span><span class="si">{:.2e}</span><span class="se">\n</span><span class="s1">'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                 <span class="n">source_raster</span><span class="p">,</span>
                 <span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span>
                 <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">src</span><span class="o">.</span><span class="n">res</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
-                <span class="n">dest_crs</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+                <span class="n">dest_crs</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span>
         <span class="n">affine</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="o">=</span> <span class="n">calculate_default_transform</span><span class="p">(</span>
             <span class="n">src</span><span class="o">.</span><span class="n">crs</span><span class="p">,</span> <span class="n">dest_crs</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="o">*</span><span class="n">src</span><span class="o">.</span><span class="n">bounds</span><span class="p">,</span> <span class="n">resolution</span><span class="o">=</span><span class="n">resolution</span><span class="p">)</span>
         <span class="n">specified_kwargs</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="n">src</span><span class="o">.</span><span class="n">meta</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">specified_kwargs</span><span class="p">)</span>
         <span class="n">kwargs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
-            <span class="s1">&#39;crs&#39;</span><span class="p">:</span> <span class="n">dest_crs</span><span class="p">,</span>
-            <span class="s1">&#39;transform&#39;</span><span class="p">:</span> <span class="n">affine</span><span class="p">,</span>
-            <span class="s1">&#39;affine&#39;</span><span class="p">:</span> <span class="n">affine</span><span class="p">,</span>
-            <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
-            <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span>
-            <span class="s1">&#39;driver&#39;</span><span class="p">:</span> <span class="n">driver</span>
+            <span class="s1">'crs'</span><span class="p">:</span> <span class="n">dest_crs</span><span class="p">,</span>
+            <span class="s1">'transform'</span><span class="p">:</span> <span class="n">affine</span><span class="p">,</span>
+            <span class="s1">'affine'</span><span class="p">:</span> <span class="n">affine</span><span class="p">,</span>
+            <span class="s1">'width'</span><span class="p">:</span> <span class="n">width</span><span class="p">,</span>
+            <span class="s1">'height'</span><span class="p">:</span> <span class="n">height</span><span class="p">,</span>
+            <span class="s1">'driver'</span><span class="p">:</span> <span class="n">driver</span>
         <span class="p">})</span>
-        <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest_raster</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;to:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">, res: </span><span class="si">{:.2e}</span><span class="s1">, </span><span class="si">{:.2e}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dst</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="o">*</span><span class="n">dst</span><span class="o">.</span><span class="n">res</span><span class="p">))</span>
+        <span class="k">with</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dest_raster</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="k">as</span> <span class="n">dst</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">'to:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">, res: </span><span class="si">{:.2e}</span><span class="s1">, </span><span class="si">{:.2e}</span><span class="s1">...'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dst</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">to_string</span><span class="p">(),</span> <span class="o">*</span><span class="n">dst</span><span class="o">.</span><span class="n">res</span><span class="p">))</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">src</span><span class="o">.</span><span class="n">count</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
                 <span class="n">reproject</span><span class="p">(</span>
                     <span class="n">source</span><span class="o">=</span><span class="n">rasterio</span><span class="o">.</span><span class="n">band</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span>
@@ -386,14 +401,14 @@
                     <span class="n">dst_crs</span><span class="o">=</span><span class="n">dest_crs</span><span class="p">,</span>
                     <span class="n">resampling</span><span class="o">=</span><span class="n">resampling</span><span class="p">,</span>
                     <span class="n">num_threads</span><span class="o">=</span><span class="n">num_threads</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;wrote </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dest_raster</span><span class="p">))</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">'wrote </span><span class="si">{}</span><span class="s1">.'</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dest_raster</span><span class="p">))</span></div>
 
 
 
 <div class="viewcode-block" id="get_rasterio_crs">
 <a class="viewcode-back" href="../../api/gisutils.projection.html#gisutils.projection.get_rasterio_crs">[docs]</a>
-<span class="k">def</span> <span class="nf">get_rasterio_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a rasterio.crs.CRS representation</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">get_rasterio_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Returns a rasterio.crs.CRS representation</span>
 <span class="sd">    of the input coordinate reference system.</span>
 
 <span class="sd">    Parameters</span>
@@ -409,18 +424,18 @@
 <span class="sd">          - PROJ keyword arguments for parameters</span>
 <span class="sd">          - JSON string with PROJ parameters</span>
 <span class="sd">          - CRS WKT string</span>
-<span class="sd">          - An authority string [i.e. &#39;epsg:4326&#39;]</span>
+<span class="sd">          - An authority string [i.e. 'epsg:4326']</span>
 <span class="sd">          - An EPSG integer code [i.e. 4326]</span>
-<span class="sd">          - A tuple of (&quot;auth_name&quot;: &quot;auth_code&quot;) [i.e (&#39;epsg&#39;, &#39;4326&#39;)]</span>
+<span class="sd">          - A tuple of ("auth_name": "auth_code") [i.e ('epsg', '4326')]</span>
 <span class="sd">          - An object with a `to_wkt` method.</span>
 <span class="sd">          - A :class:`pyproj.crs.CRS` class</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    rasterio_crs : rasterio.crs.CRS instance</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">rasterio</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;This function requires rasterio. Please conda install rasterio.&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">'This function requires rasterio. Please conda install rasterio.'</span><span class="p">)</span>
     <span class="n">crs</span> <span class="o">=</span> <span class="n">get_authority_crs</span><span class="p">(</span><span class="n">crs</span><span class="p">)</span>
     <span class="n">rasterio_crs</span> <span class="o">=</span> <span class="n">rasterio</span><span class="o">.</span><span class="n">crs</span><span class="o">.</span><span class="n">CRS</span><span class="o">.</span><span class="n">from_user_input</span><span class="p">(</span><span class="n">crs</span><span class="o">.</span><span class="n">srs</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">rasterio_crs</span></div>
