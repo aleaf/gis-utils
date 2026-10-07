@@ -12,7 +12,9 @@ from gisutils.shapefile import (df2shp, shp2df, shp_properties,
 def test_shp_properties():
     df = pd.DataFrame({'reach': [1], 'value': [1.0], 'name': ['stuff']}, index=[0])
     df = df[['name', 'reach', 'value']].copy()
-    assert [d.name for d in df.dtypes] == ['object', 'int64', 'float64']
+    # newer pandas reports string columns with dtype name 'str' instead of 'object'
+    assert [d.name for d in df.dtypes] in (['object', 'int64', 'float64'],
+                                           ['str', 'int64', 'float64'])
     assert shp_properties(df) == {'name': 'str', 'reach': 'int', 'value': 'float'}
 
 
@@ -121,7 +123,8 @@ def test_shp2df_df2shp_crs(dest_crs, test_output_path, eel_river_polygon,
     else:
         geoms = df_dest_crs['geometry']
     # verify that polygon is the same as original in 5070
-    assert geoms[0].almost_equals(eel_river_polygon)
+    # (almost_equals was removed in shapely 2.0; use equals_exact with a tolerance)
+    assert geoms[0].equals_exact(eel_river_polygon, tolerance=1e-6)
 
     # check that when writing the polygon back to a shapefile
     # a valid projection file is produced

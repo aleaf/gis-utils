@@ -320,7 +320,7 @@ def points_to_raster(points_shapefiles, nodata_value=-99,
         dest_crs = get_shapefile_crs(points_shapefiles)
 
     # reshape the values column to a nrow x ncol array; convert invalid values to nans
-    data = df[data_col].values
+    data = df[data_col].to_numpy(copy=True)
     data[data == nodata_value] = np.nan
 
     # coordinates for the orignal grid (aligned with NHG cell corners)
